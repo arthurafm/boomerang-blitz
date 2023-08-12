@@ -10,10 +10,10 @@
 
 Shooter de ondas inspirado em Binding of Isaac/Journey of the Prairie King (minigame de Stardew Valley).
 
-O jogador nascerá no meio de um mapa quadrangular onde inimigos virão dos 4 pontos cardeais em direção a ele. 
-Ele está equipado com uma pistola e um bumerange, acessáveis atráves de hotkeys. 
-Ao vencer uma certa quantidade de inimigos, o mapa é alterado para uma próxima fase, em um total de três fases, na qual os inimigos estão mais resistentes e rápidos. 
-Ao vencer as três fases, o jogador vence o jogo.
+O jogador nascerá no meio de um mapa quadrangular onde inimigos virão dos 4 pontos cardeais em direção a ele.  
+Ele está equipado com uma pistola e um bumerange, acessáveis atráves de hotkeys.   
+Ao vencer uma certa quantidade de inimigos, o mapa é alterado para uma próxima fase, em um total de três fases, na qual os inimigos estão mais resistentes e rápidos.   
+Ao vencer as três fases, o jogador vence o jogo.  
 
 ## Requisitos
 
