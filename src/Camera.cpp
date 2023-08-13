@@ -28,7 +28,7 @@ glm::vec4 Camera::getPosition() {
 // Ponto "l", para onde a câmera (look-at) estará sempre olhando.
 glm::vec4 Camera::getLookAt() {
 
-    return glm::vec4(0.0f,0.0f,0.0f,1.0f);
+    return glm::vec4(0.0f,-1.0f,0.0f,1.0f);
 }
 
 // Vetor "view", sentido para onde a câmera está virada
