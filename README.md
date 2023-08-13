@@ -4,7 +4,7 @@
 ## Integrantes:
 
 - Arthur Alves Ferreira Melo (00333985)
-- Sofia Maciel Dávila ()
+- Sofia Maciel D'avila (00323829)
 
 ## Conceito de jogo
 
