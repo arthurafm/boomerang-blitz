@@ -4,9 +4,14 @@
 
 #include "Renderer.h"
 
+#define PLANE 0
+#define ZOMBIE 1
+#define BATMAN 2
+
 // Construtor do renderizador
 Renderer::Renderer() {
     this->gpuProgramID = 0;
+    this->numLoadedTextures = 0;
 }
 
 void Renderer::initialize() {
@@ -38,6 +43,15 @@ void Renderer::LoadShadersFromFiles()
     this->view_uniform       = glGetUniformLocation(this->gpuProgramID, "view"); // Variável da matriz "view" em shader_vertex.glsl
     this->projection_uniform = glGetUniformLocation(this->gpuProgramID, "projection"); // Variável da matriz "projection" em shader_vertex.glsl
     this->object_id_uniform  = glGetUniformLocation(this->gpuProgramID, "object_id"); // Variável "object_id" em shader_fragment.glsl
+    this->bbox_min_uniform   = glGetUniformLocation(this->gpuProgramID, "bbox_min");
+    this->bbox_max_uniform   = glGetUniformLocation(this->gpuProgramID, "bbox_max");
+
+    // Variáveis em "shader_fragment.glsl" para acesso das imagens de textura
+    glUseProgram(this->gpuProgramID);
+    glUniform1i(glGetUniformLocation(this->gpuProgramID, "TextureImage0"), 0);
+//    glUniform1i(glGetUniformLocation(this->gpuProgramID, "TextureImage1"), 1);
+//    glUniform1i(glGetUniformLocation(this->gpuProgramID, "TextureImage2"), 2);
+    glUseProgram(0);
 }
 
 // Carrega um Vertex Shader de um arquivo GLSL.
@@ -129,6 +143,58 @@ void Renderer::LoadShader(const char* filename, GLuint shader_id)
     delete [] log;
 }
 
+// Função que carrega uma imagem para ser utilizada como textura
+void Renderer::LoadTextureImage(const char* filename)
+{
+    printf("Carregando imagem \"%s\"... ", filename);
+
+    // Primeiro fazemos a leitura da imagem do disco
+    stbi_set_flip_vertically_on_load(true);
+    int width;
+    int height;
+    int channels;
+    unsigned char *data = stbi_load(filename, &width, &height, &channels, 3);
+
+    if ( data == NULL )
+    {
+        fprintf(stderr, "ERROR: Cannot open image file \"%s\".\n", filename);
+        std::exit(EXIT_FAILURE);
+    }
+
+    printf("OK (%dx%d).\n", width, height);
+
+    // Agora criamos objetos na GPU com OpenGL para armazenar a textura
+    GLuint texture_id;
+    GLuint sampler_id;
+    glGenTextures(1, &texture_id);
+    glGenSamplers(1, &sampler_id);
+
+    // Veja slides 95-96 do documento Aula_20_Mapeamento_de_Texturas.pdf
+    glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // Parâmetros de amostragem da textura.
+    glSamplerParameteri(sampler_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glSamplerParameteri(sampler_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Agora enviamos a imagem lida do disco para a GPU
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+    glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+
+    GLuint textureunit = this->numLoadedTextures;
+    glActiveTexture(GL_TEXTURE0 + textureunit);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindSampler(textureunit, sampler_id);
+
+    stbi_image_free(data);
+
+    this->numLoadedTextures += 1;
+}
+
 // Esta função cria um programa de GPU, o qual contém obrigatoriamente um Vertex Shader e um Fragment Shader.
 GLuint Renderer::CreateGpuProgram(GLuint vertex_shader_id, GLuint fragment_shader_id)
 {
@@ -196,6 +262,12 @@ void Renderer::BuildTrianglesAndAddToVirtualScene(LoadedObj* model)
         size_t first_index = indices.size();
         size_t num_triangles = model->shapes[shape].mesh.num_face_vertices.size();
 
+        const float minval = std::numeric_limits<float>::min();
+        const float maxval = std::numeric_limits<float>::max();
+
+        glm::vec3 bbox_min = glm::vec3(maxval,maxval,maxval);
+        glm::vec3 bbox_max = glm::vec3(minval,minval,minval);
+
         for (size_t triangle = 0; triangle < num_triangles; ++triangle)
         {
             assert(model->shapes[shape].mesh.num_face_vertices[triangle] == 3);
@@ -237,7 +309,7 @@ void Renderer::BuildTrianglesAndAddToVirtualScene(LoadedObj* model)
 
         size_t last_index = indices.size() - 1;
 
-        Scene theobject(model->shapes[shape].name, first_index, last_index - first_index + 1, GL_TRIANGLES, vertex_array_object_id);
+        Scene theobject(model->shapes[shape].name, first_index, last_index - first_index + 1, GL_TRIANGLES, vertex_array_object_id, bbox_min, bbox_max);
 
         this->virtualScene[model->shapes[shape].name] = theobject;
     }
@@ -359,7 +431,14 @@ void Renderer::DrawVirtualObject(const char* object_name)
     // "Ligamos" o VAO.
     glBindVertexArray(this->virtualScene[object_name].vertex_array_object_id);
 
-    // GPU rasterizaa os vértices dos eixos XYZ apontados pelo VAO como linhas.
+    // Setamos as variáveis "bbox_min" e "bbox_max" do fragment shader
+    // com os parâmetros da axis-aligned bounding box (AABB) do modelo.
+    glm::vec3 bbox_min = this->virtualScene[object_name].bbox_min;
+    glm::vec3 bbox_max = this->virtualScene[object_name].bbox_max;
+    glUniform4f(this->bbox_min_uniform, bbox_min.x, bbox_min.y, bbox_min.z, 1.0f);
+    glUniform4f(this->bbox_max_uniform, bbox_max.x, bbox_max.y, bbox_max.z, 1.0f);
+
+    // GPU rasteriza os vértices dos eixos XYZ apontados pelo VAO como linhas.
     glDrawElements(
             this->virtualScene[object_name].rendering_mode,
             this->virtualScene[object_name].num_indices,
@@ -396,10 +475,29 @@ void Renderer::render(GLFWwindow* window, Camera &camera, const float &screenRat
 
     glm::mat4 model = Matrix_Identity();
 
+
+    /* Modelo do plano */
     model = Matrix_Translate(0.0f, -1.0f, 0.0f)
             * Matrix_Scale(2.0f, 1.0f, 2.0f);
     glUniformMatrix4fv(this->model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+    glUniform1i(this->object_id_uniform, PLANE);
     this->DrawVirtualObject("the_plane");
+
+    /* Modelo de Zumbi */
+    model = Matrix_Translate(0.4f, -0.5f, 0.0f)
+            * Matrix_Scale(0.005f, 0.005f, 0.005f)
+            * Matrix_Rotate_Y(-30);
+    glUniformMatrix4fv(this->model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+    glUniform1i(this->object_id_uniform, ZOMBIE);
+    this->DrawVirtualObject("the_zombie");
+
+    /* Modelo do Batman */
+    model = Matrix_Translate(0.2f, -0.5f, 0.0f)
+            * Matrix_Scale(0.008f, 0.008f, 0.008f)
+            * Matrix_Rotate_Y(30);
+    glUniformMatrix4fv(this->model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+    glUniform1i(this->object_id_uniform, BATMAN);
+    this->DrawVirtualObject("the_batman");
 
     glfwSwapBuffers(window);
 

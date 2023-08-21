@@ -10,6 +10,7 @@
 
 // Headers de OpenGL
 #include <glad/glad.h>
+#include "glm/vec3.hpp"
 
 class Scene{
     public:
@@ -18,8 +19,10 @@ class Scene{
         size_t       num_indices; // Número de índices do objeto dentro do vetor indices[] definido em BuildTrianglesAndAddToVirtualScene()
         GLenum       rendering_mode; // Modo de rasterização (GL_TRIANGLES, GL_TRIANGLE_STRIP, etc.)
         GLuint       vertex_array_object_id; // ID do VAO onde estão armazenados os atributos do modelo
+        glm::vec3    bbox_min; // Axis-Aligned Bounding Box do objeto
+        glm::vec3    bbox_max;
 
-        Scene(std::string name, size_t first_index, size_t num_indices, GLenum rendering_mode, GLuint vertex_array_object_id);
+        Scene(std::string name, size_t first_index, size_t num_indices, GLenum rendering_mode, GLuint vertex_array_object_id, glm::vec3 bbox_min, glm::vec3 bbox_max);
         Scene();
 };
 

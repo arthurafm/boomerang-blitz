@@ -15,6 +15,7 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+#include <stb_image.h>
 
 class Renderer{
     private:
@@ -24,6 +25,11 @@ class Renderer{
         GLint view_uniform;
         GLint projection_uniform;
         GLint object_id_uniform;
+        GLint bbox_min_uniform;
+        GLint bbox_max_uniform;
+
+        // Número de texturas carregadas pela função LoadTextureImage()
+        GLuint numLoadedTextures = 0;
 
         std::map<std::string, Scene> virtualScene;
 
@@ -38,6 +44,7 @@ class Renderer{
         Renderer();
         void initialize();
         void LoadShadersFromFiles(); // Carrega os shaders de vértice e fragmento, criando um programa de GPU
+        void LoadTextureImage(const char* filename); // Função que carrega imagens de textura
         void BuildTrianglesAndAddToVirtualScene(LoadedObj*); // Constrói representação de um ObjModel como malha de triângulos para renderização
         void ComputeNormals(LoadedObj* model); // Computa normais de um ObjModel, caso não existam.
         void render(GLFWwindow* window, Camera &camera, const float &screenRatio, float &initialTime);

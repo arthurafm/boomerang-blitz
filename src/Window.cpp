@@ -91,14 +91,28 @@ void Window::run() {
     // Carregamento das funções de OpenGL 3.3, utilizando a GLAD
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
 
-    this->renderer.initialize();
-
+    // Carregamos os shaders de vértices e de fragmentos que serão utilizados para renderização.
     this->renderer.LoadShadersFromFiles();
 
+    // Carregamos imagens para serem utilizadas como textura
+    this->renderer.LoadTextureImage("../data/textures/floor.jpg");
+
     // Lê .obj do plano
-    LoadedObj planemodel("../data/plane.obj");
+    LoadedObj planemodel("../data/objects/plane.obj");
     this->renderer.ComputeNormals(&planemodel);
     this->renderer.BuildTrianglesAndAddToVirtualScene(&planemodel);
+
+    // Lê .obj do zumbi
+    LoadedObj zombiemodel("../data/objects/zombie.obj");
+    this->renderer.ComputeNormals(&zombiemodel);
+    this->renderer.BuildTrianglesAndAddToVirtualScene(&zombiemodel);
+
+    // Lê .obj do Batman
+    LoadedObj batmanmodel("../data/objects/batman.obj");
+    this->renderer.ComputeNormals(&batmanmodel);
+    this->renderer.BuildTrianglesAndAddToVirtualScene(&batmanmodel);
+
+    this->renderer.initialize();
 
     // Variável para movimentação baseada em tempo
     auto prevTime = (float) glfwGetTime();
