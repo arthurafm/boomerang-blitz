@@ -10,20 +10,29 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-// Atributos de vértice que serão gerados como saída ("out") pelo Vertex Shader. Interpolados pelo rasterizador
+// Atributos de vértice que serão gerados como saída ("out") pelo Vertex Shader.
 out vec4 position_world;
+out vec4 position_model;
 out vec4 normal;
+out vec2 texcoords;
 
 void main()
 {
-    // A variável gl_Position define a posição final de cada vértice em NDC.
+    // Define a posição final de cada vértice em NDC.
 
     gl_Position = projection * view * model * model_coefficients;
 
+    // Posição do vértice atual no sistema de coordenadas global (World).
     position_world = model * model_coefficients;
+
+    // Posição do vértice atual no sistema de coordenadas local do modelo.
+    position_model = model_coefficients;
 
     // Normal do vértice atual no sistema de coordenadas global (World).
     normal = inverse(transpose(model)) * normal_coefficients;
     normal.w = 0.0;
+
+    // Coordenadas de textura obtidas do arquivo OBJ (se existirem!)
+    texcoords = texture_coefficients;
 }
 

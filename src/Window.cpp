@@ -45,9 +45,10 @@ void Window::run() {
     // Utilização de funções modernas de OpenGL
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    // Criação de uma janela do sistema operacional, de 800x800, com o título de "Boomerang Blitz"
+    // Criação de uma janela do sistema operacional, com o título de "Boomerang Blitz"
     GLFWwindow* window;
-    window = glfwCreateWindow(800, 800, "Boomerang Blitz", NULL, NULL);
+
+    window = glfwCreateWindow(this->screenWidth, this->screenHeight, "Boomerang Blitz", NULL, NULL);
     if (!window) {
         glfwTerminate();
         fprintf(stderr, "ERROR: glfwCreateWindow() failed.\n");
@@ -78,12 +79,12 @@ void Window::run() {
         self->ScrollCallback(xoffset, yoffset);
     });
     // Tamanho da janela
-    glfwSetWindowSizeCallback(window, [](GLFWwindow *window, int width, int height) {
+    glfwSetFramebufferSizeCallback(window, [](GLFWwindow *window, int width, int height) {
         Window *self = static_cast<Window *>(glfwGetWindowUserPointer(window));
         self->FramebufferSizeCallback(width, height);
     });
 
-    glfwSetWindowSize(window, 800, 800); // Definição de screenRatio.
+    glfwSetWindowSize(window, this->screenWidth, this->screenHeight); // Definição de screenRatio.
 
     // Chamadas OpenGL deverão ser renderizadas nessa janela
     glfwMakeContextCurrent(window);
@@ -91,21 +92,35 @@ void Window::run() {
     // Carregamento das funções de OpenGL 3.3, utilizando a GLAD
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
 
-    this->renderer.initialize();
-
+    // Carregamos os shaders de vértices e de fragmentos que serão utilizados para renderização.
     this->renderer.LoadShadersFromFiles();
 
+    // Carregamos imagens para serem utilizadas como textura
+    this->renderer.LoadTextureImage("../data/textures/floor.jpg");
+
     // Lê .obj do plano
-    LoadedObj planemodel("../data/plane.obj");
+    LoadedObj planemodel("../data/objects/plane.obj");
     this->renderer.ComputeNormals(&planemodel);
     this->renderer.BuildTrianglesAndAddToVirtualScene(&planemodel);
+
+    // Lê .obj do zumbi
+    LoadedObj zombiemodel("../data/objects/zombie.obj");
+    this->renderer.ComputeNormals(&zombiemodel);
+    this->renderer.BuildTrianglesAndAddToVirtualScene(&zombiemodel);
+
+    // Lê .obj do Batman
+    LoadedObj batmanmodel("../data/objects/batman.obj");
+    this->renderer.ComputeNormals(&batmanmodel);
+    this->renderer.BuildTrianglesAndAddToVirtualScene(&batmanmodel);
+
+    this->renderer.initialize();
 
     // Variável para movimentação baseada em tempo
     auto prevTime = (float) glfwGetTime();
 
     // Renderização até o usuário fechar a janela
     while (!glfwWindowShouldClose(window)) {
-        this->renderer.render(window, this->camera, (float) (this->screenWidth / this->screenHeight), prevTime);
+        this->renderer.render(window, this->camera, ((float) this->screenWidth / (float) this->screenHeight), prevTime);
     }
 
     // Finaliza o uso do sistema operacional

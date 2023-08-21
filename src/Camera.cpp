@@ -19,16 +19,11 @@ Camera::Camera() {
 
 }
 
-// Ponto "c", centro da câmera em coordenadas cartesianas
-glm::vec4 Camera::getPosition() {
-
-    return this->cartesianPosition;
-}
-
 // Ponto "l", para onde a câmera (look-at) estará sempre olhando.
 glm::vec4 Camera::getLookAt() {
 
-    return glm::vec4(0.0f,-1.0f,0.0f,1.0f);
+    // Olha para o Batman
+    return glm::vec4(0.2f, -0.2f, 0.0f,1.0f);
 }
 
 // Vetor "view", sentido para onde a câmera está virada

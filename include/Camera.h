@@ -55,7 +55,6 @@ class Camera {
 
     public:
         Camera();
-        glm::vec4 getPosition(); // Ponto "c", centro da câmera
         glm::vec4 getLookAt(); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
         glm::vec4 getViewVector();  // Vetor "view", sentido para onde a câmera está virada
         glm::mat4 getView();
