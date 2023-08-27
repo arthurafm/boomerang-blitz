@@ -292,13 +292,14 @@ void Renderer::render(GLFWwindow* window, Camera &camera, const float &aspectRat
     glm::mat4 model = Matrix_Identity();
 
     for (Model &object : this->models) {
+        model = Matrix_Translate(object.getPosition().x, object.getPosition().y, object.getPosition().z);
+        model *= Matrix_Scale(object.getScale().x, object.getScale().y, object.getScale().z);
 
         // Se é o robô
         if (object.getId() == 1) {
-//            object.updatePlayer(delta_t, camera);
+            object.updatePlayer(delta_t, camera);
         }
-        model = Matrix_Translate(object.getPosition().x, object.getPosition().y, object.getPosition().z);
-        model *= Matrix_Scale(object.getScale().x, object.getScale().y, object.getScale().z);
+
         glUniformMatrix4fv(this->model_uniform, 1, GL_FALSE, glm::value_ptr(model));
         glUniform1i(this->object_id_uniform, object.getId());
         this->DrawVirtualObject(object.getName().c_str());

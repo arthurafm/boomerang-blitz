@@ -28,7 +28,7 @@ struct SphericPosition {
     SphericPosition() {
         this->phi = 0.0f;
         this->theta = 0.0f;
-        this->distance = 2.5f;
+        this->distance = 1.0f;
     }
 };
 
@@ -67,15 +67,16 @@ class Camera {
         static constexpr glm::vec4 upVector = glm::vec4(0.0f,1.0f,0.0f,0.0f);
 
         void updateCamera(float delta_t);
+        void updateCamera(glm::vec4 pos);
+
         void updateViewVector(float angleX, float angleY);
 
         void updateSphericAngles(float dx, float dy);
         void updateSphericDistance(float distance);
 
-        bool isUseFreeCamera() const;
+        [[nodiscard]] bool isUseFreeCamera() const;
         void revertFreeCamera();
 
-        glm::vec4 getCartesianPosition();
 
         /* Variáveis de controle de pressionar teclas e botões do mouse */
         Keys keys;

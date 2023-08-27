@@ -36,10 +36,12 @@ glm::vec4 Camera::getViewVector() {
 
 // Atualiza o View Vector em câmera Look-At
 void Camera::updateViewVector() {
-    this->cartesianPosition.x = this->sphericPosition.distance * cos(this->sphericPosition.phi) * sin(this->sphericPosition.theta);
-    this->cartesianPosition.y = this->sphericPosition.distance * sin(this->sphericPosition.phi);
-    this->cartesianPosition.z = this->sphericPosition.distance * cos(this->sphericPosition.phi) * cos(this->sphericPosition.theta);
-    this->viewVector = normalize(this->getLookAt() - this->cartesianPosition);
+    glm::vec4 vec;
+    vec.x = this->sphericPosition.distance * cos(this->sphericPosition.phi) * sin(this->sphericPosition.theta);
+    vec.y = this->sphericPosition.distance * sin(this->sphericPosition.phi);
+    vec.z = this->sphericPosition.distance * cos(this->sphericPosition.phi) * cos(this->sphericPosition.theta);
+    vec.w = 1.0f;
+    this->viewVector = normalize(this->getLookAt() - vec);
 }
 
 // Atualiza o View Vector em câmera livre
@@ -89,7 +91,18 @@ void Camera::updateSphericDistance(float distance){
 }
 
 glm::mat4 Camera::getView() {
-    return Matrix_Camera_View(this->cartesianPosition, this->viewVector, Camera::upVector);
+    if (this->useFreeCamera) {
+        return Matrix_Camera_View(this->cartesianPosition, this->viewVector, Camera::upVector);
+    }
+    else {
+        glm::vec4 vec;
+        vec.x = this->sphericPosition.distance * cos(this->sphericPosition.phi) * sin(this->sphericPosition.theta);
+        vec.y = this->sphericPosition.distance * sin(this->sphericPosition.phi);
+        vec.z = this->sphericPosition.distance * cos(this->sphericPosition.phi) * cos(this->sphericPosition.theta);
+        vec.w = 1.0f;
+
+        return Matrix_Camera_View(vec, this->viewVector, Camera::upVector);
+    }
 }
 
 glm::mat4 Camera::getPerspective(float aspectRatio) {
@@ -99,25 +112,29 @@ glm::mat4 Camera::getPerspective(float aspectRatio) {
 void Camera::updateCamera(float delta_t) {
 
     float cameraSpeed = 2.0f;
-    if (this->useFreeCamera) {
-        glm::vec4 w = -(normalize(this->getViewVector()));
-        glm::vec4 u = normalize(crossproduct(Camera::upVector, w));
-        if (this->keys.W){
-            this->cartesianPosition -= w * cameraSpeed * delta_t;
-        }
-        if (this->keys.S){
-            this->cartesianPosition += w * cameraSpeed * delta_t;
-        }
-        if (this->keys.A){
-            this->cartesianPosition -= u * cameraSpeed * delta_t;
-        }
-        if (this->keys.D){
-            this->cartesianPosition += u * cameraSpeed * delta_t;
-        }
+    glm::vec4 w = -(normalize(this->getViewVector()));
+    glm::vec4 u = normalize(crossproduct(Camera::upVector, w));
+    if (this->keys.W){
+        this->cartesianPosition -= w * cameraSpeed * delta_t;
     }
-    else {
+    if (this->keys.S){
+        this->cartesianPosition += w * cameraSpeed * delta_t;
+    }
+    if (this->keys.A){
+        this->cartesianPosition -= u * cameraSpeed * delta_t;
+    }
+    if (this->keys.D){
+        this->cartesianPosition += u * cameraSpeed * delta_t;
+    }
+    this->cartesianPosition.y = 0.8f;
+
+    if (!this->useFreeCamera) {
         this->updateViewVector();
     }
+}
+
+void Camera::updateCamera(glm::vec4 pos) {
+    this->cartesianPosition = pos;
 }
 
 bool Camera::isUseFreeCamera() const{
@@ -126,8 +143,4 @@ bool Camera::isUseFreeCamera() const{
 
 void Camera::revertFreeCamera() {
     this->useFreeCamera = !this->useFreeCamera;
-}
-
-glm::vec4 Camera::getCartesianPosition(){
-    return this->cartesianPosition;
 }

@@ -16,10 +16,6 @@ Model::Model(int id, glm::vec3 position, glm::vec3 scale, const char* name, cons
     this->BuildTrianglesAndAddToVirtualScene(virtualScene);
 }
 
-LoadedObj& Model::getObj() {
-    return this->obj;
-}
-
 // Função que computa as normais de um ObjModel, caso elas não tenham sido especificadas.
 void Model::ComputeNormals()
 {
@@ -214,4 +210,27 @@ std::string Model::getName(){
 
 int Model::getId() const{
     return this->objectId;
+}
+
+void Model::updatePlayer(float delta_t, Camera &camera) {
+
+    float speed = 2.0f;
+    glm::vec4 w = -(normalize(camera.getViewVector()));
+    glm::vec4 u = normalize(crossproduct(Camera::upVector, w));
+    if (!camera.isUseFreeCamera()) {
+        camera.setLookAt(glm::vec4(this->position, 1.0f));
+    }
+    if (camera.keys.W){
+        this->position -= glm::vec3(w.x, 0.0f, w.z) * speed * delta_t;
+    }
+    if (camera.keys.S){
+        this->position += glm::vec3(w.x, 0.0f, w.z) * speed * delta_t;
+    }
+    if (camera.keys.A){
+        this->position -= glm::vec3(u.x, 0.0f, u.z) * speed * delta_t;
+    }
+    if (camera.keys.D){
+        this->position += glm::vec3(u.x, 0.0f, u.z) * speed * delta_t;
+    }
+
 }

@@ -8,29 +8,29 @@
 #include "glm/vec4.hpp"
 #include "LoadedObj.h"
 #include "Scene.h"
+#include "Camera.h"
 #include <string>
 
 class Model {
     private:
-    glm::vec3 scale;
+        glm::vec3 scale;
         std::string name;
         LoadedObj obj;
         int objectId;
+        glm::vec3 position;
 
         void ComputeNormals();
         void BuildTrianglesAndAddToVirtualScene(std::map<std::string, Scene> &virtualScene);
 
-    protected:
-        glm::vec3 position;
-
     public:
         Model(int id, glm::vec3 position, glm::vec3 scale, const char* name, const char* path, std::map<std::string, Scene> &virtualScene);
+
+        void updatePlayer(float delta_t, Camera &camera);
 
         glm::vec3 getPosition();
         glm::vec3 getScale();
         std::string getName();
-        int getId() const;
-        LoadedObj& getObj();
+        [[nodiscard]] int getId() const;
 };
 
 
