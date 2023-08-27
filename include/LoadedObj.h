@@ -20,6 +20,7 @@ class LoadedObj {
         std::vector<tinyobj::material_t>  materials;
 
         LoadedObj(const char* filename, const char* basepath = NULL, bool triangulate = true);
+        LoadedObj();
 };
 
 

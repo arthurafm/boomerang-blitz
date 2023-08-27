@@ -4,10 +4,6 @@
 
 #include "Renderer.h"
 
-#define PLANE 0
-#define ZOMBIE 1
-#define BATMAN 2
-
 // Construtor do renderizador
 Renderer::Renderer() {
     this->gpuProgramID = 0;
@@ -48,9 +44,9 @@ void Renderer::LoadShadersFromFiles()
 
     // Variáveis em "shader_fragment.glsl" para acesso das imagens de textura
     glUseProgram(this->gpuProgramID);
-    glUniform1i(glGetUniformLocation(this->gpuProgramID, "TextureImage0"), 0);
-//    glUniform1i(glGetUniformLocation(this->gpuProgramID, "TextureImage1"), 1);
-//    glUniform1i(glGetUniformLocation(this->gpuProgramID, "TextureImage2"), 2);
+    glUniform1i(glGetUniformLocation(this->gpuProgramID, "PlaneTexture"), 0);
+    glUniform1i(glGetUniformLocation(this->gpuProgramID, "RobotTexture"), 1);
+    glUniform1i(glGetUniformLocation(this->gpuProgramID, "ZombieTexture"), 2);
     glUseProgram(0);
 }
 
@@ -245,186 +241,6 @@ GLuint Renderer::CreateGpuProgram(GLuint vertex_shader_id, GLuint fragment_shade
     return program_id;
 }
 
-// Constrói triângulos para futura renderização a partir de um ObjModel.
-void Renderer::BuildTrianglesAndAddToVirtualScene(LoadedObj* model)
-{
-    GLuint vertex_array_object_id;
-    glGenVertexArrays(1, &vertex_array_object_id);
-    glBindVertexArray(vertex_array_object_id);
-
-    std::vector<GLuint> indices;
-    std::vector<float>  model_coefficients;
-    std::vector<float>  normal_coefficients;
-    std::vector<float>  texture_coefficients;
-
-    for (size_t shape = 0; shape < model->shapes.size(); ++shape)
-    {
-        size_t first_index = indices.size();
-        size_t num_triangles = model->shapes[shape].mesh.num_face_vertices.size();
-
-        const float minval = std::numeric_limits<float>::min();
-        const float maxval = std::numeric_limits<float>::max();
-
-        glm::vec3 bbox_min = glm::vec3(maxval,maxval,maxval);
-        glm::vec3 bbox_max = glm::vec3(minval,minval,minval);
-
-        for (size_t triangle = 0; triangle < num_triangles; ++triangle)
-        {
-            assert(model->shapes[shape].mesh.num_face_vertices[triangle] == 3);
-
-            for (size_t vertex = 0; vertex < 3; ++vertex)
-            {
-                tinyobj::index_t idx = model->shapes[shape].mesh.indices[3*triangle + vertex];
-
-                indices.push_back(first_index + 3*triangle + vertex);
-
-                const float vx = model->attrib.vertices[3*idx.vertex_index + 0];
-                const float vy = model->attrib.vertices[3*idx.vertex_index + 1];
-                const float vz = model->attrib.vertices[3*idx.vertex_index + 2];
-                model_coefficients.push_back( vx ); // X
-                model_coefficients.push_back( vy ); // Y
-                model_coefficients.push_back( vz ); // Z
-                model_coefficients.push_back( 1.0f ); // W
-
-                if ( idx.normal_index != -1 )
-                {
-                    const float nx = model->attrib.normals[3*idx.normal_index + 0];
-                    const float ny = model->attrib.normals[3*idx.normal_index + 1];
-                    const float nz = model->attrib.normals[3*idx.normal_index + 2];
-                    normal_coefficients.push_back( nx ); // X
-                    normal_coefficients.push_back( ny ); // Y
-                    normal_coefficients.push_back( nz ); // Z
-                    normal_coefficients.push_back( 0.0f ); // W
-                }
-
-                if ( idx.texcoord_index != -1 )
-                {
-                    const float u = model->attrib.texcoords[2*idx.texcoord_index + 0];
-                    const float v = model->attrib.texcoords[2*idx.texcoord_index + 1];
-                    texture_coefficients.push_back( u );
-                    texture_coefficients.push_back( v );
-                }
-            }
-        }
-
-        size_t last_index = indices.size() - 1;
-
-        Scene theobject(model->shapes[shape].name, first_index, last_index - first_index + 1, GL_TRIANGLES, vertex_array_object_id, bbox_min, bbox_max);
-
-        this->virtualScene[model->shapes[shape].name] = theobject;
-    }
-
-    GLuint VBO_model_coefficients_id;
-    glGenBuffers(1, &VBO_model_coefficients_id);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO_model_coefficients_id);
-    glBufferData(GL_ARRAY_BUFFER, model_coefficients.size() * sizeof(float), NULL, GL_STATIC_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, model_coefficients.size() * sizeof(float), model_coefficients.data());
-    GLuint location = 0; // "(location = 0)" em "shader_vertex.glsl"
-    GLint  number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
-    glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(location);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    if ( !normal_coefficients.empty() )
-    {
-        GLuint VBO_normal_coefficients_id;
-        glGenBuffers(1, &VBO_normal_coefficients_id);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO_normal_coefficients_id);
-        glBufferData(GL_ARRAY_BUFFER, normal_coefficients.size() * sizeof(float), NULL, GL_STATIC_DRAW);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, normal_coefficients.size() * sizeof(float), normal_coefficients.data());
-        location = 1; // "(location = 1)" em "shader_vertex.glsl"
-        number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
-        glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(location);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-
-    if ( !texture_coefficients.empty() )
-    {
-        GLuint VBO_texture_coefficients_id;
-        glGenBuffers(1, &VBO_texture_coefficients_id);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO_texture_coefficients_id);
-        glBufferData(GL_ARRAY_BUFFER, texture_coefficients.size() * sizeof(float), NULL, GL_STATIC_DRAW);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, texture_coefficients.size() * sizeof(float), texture_coefficients.data());
-        location = 2; // "(location = 1)" em "shader_vertex.glsl"
-        number_of_dimensions = 2; // vec2 em "shader_vertex.glsl"
-        glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(location);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-
-    GLuint indices_id;
-    glGenBuffers(1, &indices_id);
-
-    // "Ligamos" o buffer. Note que o tipo agora é GL_ELEMENT_ARRAY_BUFFER.
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_id);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), NULL, GL_STATIC_DRAW);
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.size() * sizeof(GLuint), indices.data());
-
-    // "Desligamos" o VAO.
-    glBindVertexArray(0);
-}
-
-// Função que computa as normais de um ObjModel, caso elas não tenham sido especificadas.
-void Renderer::ComputeNormals(LoadedObj* model)
-{
-    if ( !model->attrib.normals.empty() )
-        return;
-
-    // Primeiro computamos as normais para todos os TRIÂNGULOS.
-    // Segundo, computamos as normais dos VÉRTICES através do método proposto por Gouraud.
-
-    size_t num_vertices = model->attrib.vertices.size() / 3;
-
-    std::vector<int> num_triangles_per_vertex(num_vertices, 0);
-    std::vector<glm::vec4> vertex_normals(num_vertices, glm::vec4(0.0f,0.0f,0.0f,0.0f));
-
-    for (size_t shape = 0; shape < model->shapes.size(); ++shape)
-    {
-        size_t num_triangles = model->shapes[shape].mesh.num_face_vertices.size();
-
-        for (size_t triangle = 0; triangle < num_triangles; ++triangle)
-        {
-            assert(model->shapes[shape].mesh.num_face_vertices[triangle] == 3);
-
-            glm::vec4  vertices[3];
-            for (size_t vertex = 0; vertex < 3; ++vertex)
-            {
-                tinyobj::index_t idx = model->shapes[shape].mesh.indices[3*triangle + vertex];
-                const float vx = model->attrib.vertices[3*idx.vertex_index + 0];
-                const float vy = model->attrib.vertices[3*idx.vertex_index + 1];
-                const float vz = model->attrib.vertices[3*idx.vertex_index + 2];
-                vertices[vertex] = glm::vec4(vx,vy,vz,1.0);
-            }
-
-            const glm::vec4  a = vertices[0];
-            const glm::vec4  b = vertices[1];
-            const glm::vec4  c = vertices[2];
-
-            const glm::vec4 n = crossproduct(b - a, c - a);
-
-            for (size_t vertex = 0; vertex < 3; ++vertex)
-            {
-                tinyobj::index_t idx = model->shapes[shape].mesh.indices[3*triangle + vertex];
-                num_triangles_per_vertex[idx.vertex_index] += 1;
-                vertex_normals[idx.vertex_index] += n;
-                model->shapes[shape].mesh.indices[3*triangle + vertex].normal_index = idx.vertex_index;
-            }
-        }
-    }
-
-    model->attrib.normals.resize( 3*num_vertices );
-
-    for (size_t i = 0; i < vertex_normals.size(); ++i)
-    {
-        glm::vec4 n = vertex_normals[i] / (float)num_triangles_per_vertex[i];
-        n /= norm(n);
-        model->attrib.normals[3*i + 0] = n.x;
-        model->attrib.normals[3*i + 1] = n.y;
-        model->attrib.normals[3*i + 2] = n.z;
-    }
-}
-
 // Função que desenha um objeto armazenado em virtualScene.
 void Renderer::DrawVirtualObject(const char* object_name)
 {
@@ -475,29 +291,18 @@ void Renderer::render(GLFWwindow* window, Camera &camera, const float &aspectRat
 
     glm::mat4 model = Matrix_Identity();
 
+    for (Model &object : this->models) {
 
-    /* Modelo do plano */
-    model = Matrix_Translate(0.0f, -1.0f, 0.0f)
-            * Matrix_Scale(2.0f, 1.0f, 2.0f);
-    glUniformMatrix4fv(this->model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-    glUniform1i(this->object_id_uniform, PLANE);
-    this->DrawVirtualObject("the_plane");
-
-    /* Modelo de Zumbi */
-    model = Matrix_Translate(0.4f, -0.5f, 0.0f)
-            * Matrix_Scale(0.005f, 0.005f, 0.005f)
-            * Matrix_Rotate_Y(-30);
-    glUniformMatrix4fv(this->model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-    glUniform1i(this->object_id_uniform, ZOMBIE);
-    this->DrawVirtualObject("the_zombie");
-
-    /* Modelo do Batman */
-    model = Matrix_Translate(0.2f, -0.5f, 0.0f)
-            * Matrix_Scale(0.008f, 0.008f, 0.008f)
-            * Matrix_Rotate_Y(30);
-    glUniformMatrix4fv(this->model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-    glUniform1i(this->object_id_uniform, BATMAN);
-    this->DrawVirtualObject("the_batman");
+        // Se é o robô
+        if (object.getId() == 1) {
+//            object.updatePlayer(delta_t, camera);
+        }
+        model = Matrix_Translate(object.getPosition().x, object.getPosition().y, object.getPosition().z);
+        model *= Matrix_Scale(object.getScale().x, object.getScale().y, object.getScale().z);
+        glUniformMatrix4fv(this->model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+        glUniform1i(this->object_id_uniform, object.getId());
+        this->DrawVirtualObject(object.getName().c_str());
+    }
 
     glfwSwapBuffers(window);
 

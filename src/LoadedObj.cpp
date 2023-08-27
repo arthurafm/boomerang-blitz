@@ -5,6 +5,10 @@
 #include "LoadedObj.h"
 #include <stdexcept>
 
+LoadedObj::LoadedObj(){
+
+}
+
 LoadedObj::LoadedObj(const char* filename, const char* basepath, bool triangulate)
 {
     printf("Carregando objetos do arquivo \"%s\"...\n", filename);

@@ -7,23 +7,25 @@
 // Construtor do objeto Camera
 Camera::Camera() {
 
-    this->cartesianPosition = glm::vec4(0.0f,0.0f,2.5f,1.0f);
+    this->cartesianPosition = glm::vec4(0.4f, 0.8f, 0.0f, 1.0f);
 
     this->useFreeCamera = true;
 
-    this->updateViewVector();
+    this->lookAt = glm::vec4(0.2f, -0.2f, 0.0f, 1.0f);
+
+    this->viewVector = normalize(this->getLookAt() - this->cartesianPosition);
 
     this->nearPlane = -0.1f;
-    this->farPlane = -10.0f;
-
-
+    this->farPlane = -100.0f;
 }
 
 // Ponto "l", para onde a câmera (look-at) estará sempre olhando.
 glm::vec4 Camera::getLookAt() {
+    return this->lookAt;
+}
 
-    // Olha para o Batman
-    return glm::vec4(0.2f, -0.2f, 0.0f,1.0f);
+void Camera::setLookAt(glm::vec4 vec) {
+    this->lookAt = vec;
 }
 
 // Vetor "view", sentido para onde a câmera está virada
@@ -34,9 +36,9 @@ glm::vec4 Camera::getViewVector() {
 
 // Atualiza o View Vector em câmera Look-At
 void Camera::updateViewVector() {
-    this->cartesianPosition.x = this->sphericPosition.distance * cos(this->sphericPosition.phi)*sin(this->sphericPosition.theta);
+    this->cartesianPosition.x = this->sphericPosition.distance * cos(this->sphericPosition.phi) * sin(this->sphericPosition.theta);
     this->cartesianPosition.y = this->sphericPosition.distance * sin(this->sphericPosition.phi);
-    this->cartesianPosition.z = this->sphericPosition.distance * cos(this->sphericPosition.phi)*cos(this->sphericPosition.theta);
+    this->cartesianPosition.z = this->sphericPosition.distance * cos(this->sphericPosition.phi) * cos(this->sphericPosition.theta);
     this->viewVector = normalize(this->getLookAt() - this->cartesianPosition);
 }
 
@@ -100,7 +102,6 @@ void Camera::updateCamera(float delta_t) {
     if (this->useFreeCamera) {
         glm::vec4 w = -(normalize(this->getViewVector()));
         glm::vec4 u = normalize(crossproduct(Camera::upVector, w));
-
         if (this->keys.W){
             this->cartesianPosition -= w * cameraSpeed * delta_t;
         }
@@ -125,4 +126,8 @@ bool Camera::isUseFreeCamera() const{
 
 void Camera::revertFreeCamera() {
     this->useFreeCamera = !this->useFreeCamera;
+}
+
+glm::vec4 Camera::getCartesianPosition(){
+    return this->cartesianPosition;
 }

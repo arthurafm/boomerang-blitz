@@ -10,6 +10,7 @@
 #include "Scene.h"
 #include "matrices.h"
 #include "glad/glad.h"
+#include "Model.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <GLFW/glfw3.h>
 #include <fstream>
@@ -31,8 +32,6 @@ class Renderer{
         // Número de texturas carregadas pela função LoadTextureImage()
         GLuint numLoadedTextures = 0;
 
-        std::map<std::string, Scene> virtualScene;
-
         /* Declaração de funções de renderização */
         GLuint LoadShader_Vertex(const char* filename);   // Carrega um vertex shader
         GLuint LoadShader_Fragment(const char* filename); // Carrega um fragment shader
@@ -43,10 +42,14 @@ class Renderer{
     public:
         Renderer();
         void initialize();
+
+        std::vector<Model> models;
+
+        std::map<std::string, Scene> virtualScene;
+
         void LoadShadersFromFiles(); // Carrega os shaders de vértice e fragmento, criando um programa de GPU
         void LoadTextureImage(const char* filename); // Função que carrega imagens de textura
-        void BuildTrianglesAndAddToVirtualScene(LoadedObj*); // Constrói representação de um ObjModel como malha de triângulos para renderização
-        void ComputeNormals(LoadedObj* model); // Computa normais de um ObjModel, caso não existam.
+
         void render(GLFWwindow* window, Camera &camera, const float &aspectRatio, float &initialTime);
 
 

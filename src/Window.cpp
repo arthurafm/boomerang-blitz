@@ -13,8 +13,12 @@
 /* Headers de classes do projeto */
 #include "Window.h"
 #include "Renderer.h"
-#include "LoadedObj.h"
 #include "Scene.h"
+#include "Model.h"
+
+#define SCENERY 0
+#define ROBOT 1
+#define ZOMBIE 2
 
 // Construtor do objeto Window
 Window::Window() {
@@ -97,21 +101,40 @@ void Window::run() {
 
     // Carregamos imagens para serem utilizadas como textura
     this->renderer.LoadTextureImage("../data/textures/floor.jpg");
+    this->renderer.LoadTextureImage("../data/textures/robot/robot_albedo.tga");
+    this->renderer.LoadTextureImage("../data/textures/zombie_diffuse.png");
 
-    // Lê .obj do plano
-    LoadedObj planemodel("../data/objects/plane.obj");
-    this->renderer.ComputeNormals(&planemodel);
-    this->renderer.BuildTrianglesAndAddToVirtualScene(&planemodel);
+    // Cria modelo do cenário
+    Model scenery(SCENERY,
+                  glm::vec3(0.0f, 0.0f, 0.0f),
+                  glm::vec3(10.0f, 10.0f, 10.0f),
+                  "the_scene",
+                  "../data/objects/scenery.obj",
+                  this->renderer.virtualScene);
 
-    // Lê .obj do zumbi
-    LoadedObj zombiemodel("../data/objects/zombie.obj");
-    this->renderer.ComputeNormals(&zombiemodel);
-    this->renderer.BuildTrianglesAndAddToVirtualScene(&zombiemodel);
+    this->renderer.models.push_back(scenery);
 
-    // Lê .obj do Batman
-    LoadedObj batmanmodel("../data/objects/batman.obj");
-    this->renderer.ComputeNormals(&batmanmodel);
-    this->renderer.BuildTrianglesAndAddToVirtualScene(&batmanmodel);
+    // Cria modelo do robô
+    Model robot(ROBOT,
+                 glm::vec3(0.4f, 0.0f, 0.0f),
+                 glm::vec3(1.0f, 1.0f, 1.0f),
+                 "the_robot",
+                 "../data/objects/robot.obj",
+                 this->renderer.virtualScene);
+
+    this->camera.setLookAt(glm::vec4(robot.getPosition().x, robot.getPosition().y + 0.2f, robot.getPosition().z, 1.0f));
+
+    this->renderer.models.push_back(robot);
+
+    // Cria modelo do zumbi
+    Model zombie(ZOMBIE,
+                 glm::vec3(-0.4f, 0.0f, 0.0f),
+                 glm::vec3(0.5f, 0.5f, 0.5f),
+                 "the_zombie",
+                 "../data/objects/zombie.obj",
+                 this->renderer.virtualScene);
+
+    this->renderer.models.push_back(zombie);
 
     this->renderer.initialize();
 
@@ -151,12 +174,14 @@ void Window::KeyCallback(int key, int scancode, int action, int mode) {
     // Se o usuário apertar a tecla C, a câmera é trocada
     if (key == GLFW_KEY_C && action == GLFW_PRESS) {
         this->camera.revertFreeCamera();
+//        Player::firstPerson = !Player::firstPerson;
     }
 
-    // Se o usuário apertar as teclas de movimento da câmera
+    // Se o usuário apertar as teclas de movimento
     if (key == GLFW_KEY_W) {
         if (action == GLFW_PRESS) {
             this->camera.keys.W = true;
+//            Player::keys.W = true;
         }
         else if (action == GLFW_RELEASE) {
             this->camera.keys.W = false;
@@ -165,6 +190,7 @@ void Window::KeyCallback(int key, int scancode, int action, int mode) {
     if (key == GLFW_KEY_A) {
         if (action == GLFW_PRESS) {
             this->camera.keys.A = true;
+//            Player::keys.A = true;
         }
         else if (action == GLFW_RELEASE) {
             this->camera.keys.A = false;
@@ -173,17 +199,22 @@ void Window::KeyCallback(int key, int scancode, int action, int mode) {
     if (key == GLFW_KEY_S) {
         if (action == GLFW_PRESS) {
             this->camera.keys.S = true;
+//            Player::keys.S = true;
         }
         else if (action == GLFW_RELEASE) {
             this->camera.keys.S = false;
+//            Player::keys.S = false;
+
         }
     }
     if (key == GLFW_KEY_D) {
         if (action == GLFW_PRESS) {
             this->camera.keys.D = true;
+//            Player::keys.D = true;
         }
         else if (action == GLFW_RELEASE) {
             this->camera.keys.D = false;
+//            Player::keys.D = false;
         }
     }
 }
@@ -203,11 +234,6 @@ void Window::MouseButtonCallback(int button, int action, int mods) {
 }
 
 void Window::CursorPosCallback(double xpos, double ypos) {
-    // Abaixo executamos o seguinte: caso o botão esquerdo do mouse esteja
-    // pressionado, computamos quanto que o mouse se movimento desde o último
-    // instante de tempo, e usamos esta movimentação para atualizar os
-    // parâmetros que definem a posição da câmera dentro da cena virtual.
-    // Assim, temos que o usuário consegue controlar a câmera.
 
     if (!this->camera.keys.M1)
         return;

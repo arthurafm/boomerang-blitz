@@ -15,9 +15,10 @@ uniform mat4 view;
 uniform mat4 projection;
 
 // Identificador que define qual objeto está sendo desenhado no momento
-#define PLANE 0
-#define ZOMBIE 1
-#define BATMAN 2
+#define SCENE 0
+#define ROBOT 1
+#define ZOMBIE 2
+#define SPHERE 3
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -25,7 +26,9 @@ uniform vec4 bbox_min;
 uniform vec4 bbox_max;
 
 // Variáveis para acesso das imagens de textura
-uniform sampler2D TextureImage0;
+uniform sampler2D PlaneTexture;
+uniform sampler2D RobotTexture;
+uniform sampler2D ZombieTexture;
 
 // Cor final do fragmento.
 out vec4 color;
@@ -60,13 +63,10 @@ void main()
     vec3 Ka; // Refletância ambiente
     float q; // Expoente especular para o modelo de iluminação de Phong
 
-    if ( object_id == PLANE )
+    if ( object_id == SCENE )
     {
         // Propriedades espectrais da plano
-//        Kd = vec3(0.2,0.2,0.2);
-        U = texcoords.x;
-        V = texcoords.y;
-        Kd = texture(TextureImage0, vec2(U, V)).rgb;
+        Kd = texture(PlaneTexture, texcoords).rgb;
         Ks = vec3(0.3,0.3,0.3);
         Ka = vec3(0.0,0.0,0.0);
         q = 20.0;
@@ -74,14 +74,21 @@ void main()
     else if ( object_id == ZOMBIE )
     {
         // Propriedades espectrais do zumbi
-        Kd = vec3(0.08,0.4,0.8);
+        Kd = texture(ZombieTexture, texcoords).rgb;
         Ks = vec3(0.8,0.8,0.8);
         Ka = Kd / 2.0;
         q = 32.0;
     }
-    else if ( object_id == BATMAN ) {
-        // Propriedades espectrais do zumbi
-        Kd = vec3(0.08,0.8,0.1);
+    else if ( object_id == ROBOT ) {
+        // Propriedades espectrais do robô
+        Kd = texture(RobotTexture, texcoords).rgb;
+        Ks = vec3(0.8,0.8,0.8);
+        Ka = Kd / 2.0;
+        q = 32.0;
+    }
+    else if ( object_id == SPHERE ) {
+        // Propriedades espectrais da esfera
+        Kd = vec3(0.8,0.08,0.1);
         Ks = vec3(0.8,0.8,0.8);
         Ka = Kd / 2.0;
         q = 32.0;

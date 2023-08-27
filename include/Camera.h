@@ -53,9 +53,12 @@ class Camera {
         glm::vec4 viewVector;
         void updateViewVector();
 
+        glm::vec4 lookAt;
+
     public:
         Camera();
         glm::vec4 getLookAt(); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
+        void setLookAt(glm::vec4 vec);
         glm::vec4 getViewVector();  // Vetor "view", sentido para onde a câmera está virada
         glm::mat4 getView();
         glm::mat4 getPerspective(float aspectRatio);
@@ -71,6 +74,8 @@ class Camera {
 
         bool isUseFreeCamera() const;
         void revertFreeCamera();
+
+        glm::vec4 getCartesianPosition();
 
         /* Variáveis de controle de pressionar teclas e botões do mouse */
         Keys keys;
