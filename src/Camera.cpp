@@ -36,11 +36,13 @@ glm::vec4 Camera::getViewVector() {
 
 // Atualiza o View Vector em câmera Look-At
 void Camera::updateViewVector() {
+
     glm::vec4 vec = lookAt;
     vec.x += this->sphericPosition.distance * cos(this->sphericPosition.phi) * sin(this->sphericPosition.theta);
     vec.y += this->sphericPosition.distance * sin(this->sphericPosition.phi);
     vec.z += this->sphericPosition.distance * cos(this->sphericPosition.phi) * cos(this->sphericPosition.theta);
     vec.w = 1.0f;
+
     this->viewVector = normalize(this->getLookAt() - vec);
 }
 
@@ -68,12 +70,12 @@ void Camera::updateSphericAngles(float dx, float dy) {
 
     float newPhi = this->sphericPosition.phi + 0.003f * dy;
 
-    // Em coordenadas esféricas, phi deve ficar entre -pi/2 e +pi/2.
-    if (newPhi > M_PI_2) {
-        newPhi = M_PI_2;
+    // Na Look-At, o ângulo da câmera deve estar entre 0 e pi/4.
+    if (newPhi > (M_PI_2 / 2)) {
+        newPhi = (M_PI_2 / 2);
     }
-    if (newPhi < -M_PI_2) {
-        newPhi = -M_PI_2;
+    if (newPhi < 0) {
+        newPhi = 0;
     }
 
     this->sphericPosition.phi = newPhi;

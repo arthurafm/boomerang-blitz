@@ -5,6 +5,11 @@
 #include "Renderer.h"
 #include "collisions.h"
 
+#define SCENERY 0
+#define ROBOT 1
+#define ZOMBIE 2
+#define BOOMERANG 3
+
 // Construtor do renderizador
 Renderer::Renderer() {
     this->gpuProgramID = 0;
@@ -300,8 +305,8 @@ void Renderer::render(GLFWwindow* window, Camera &camera, const float &aspectRat
         object.updateBbox();
 
         // Se é o robô
-        if (object.getId() == 1) {
-            object.updatePlayer(delta_t, camera, this->models[0]);
+        if (object.getId() == ROBOT) {
+            object.updatePlayer(delta_t, camera, this->models[SCENERY]);
             model *= Matrix_Rotate_Y(object.getRotation());
         }
 
