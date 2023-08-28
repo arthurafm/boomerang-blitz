@@ -126,8 +126,6 @@ void Window::run() {
                  "../data/objects/robot.obj",
                  this->renderer.virtualScene);
 
-    this->camera.setLookAt(glm::vec4(robot.getPosition().x, robot.getPosition().y + 0.2f, robot.getPosition().z, 1.0f));
-
     this->renderer.models.push_back(robot);
 
     // Cria modelo do zumbi

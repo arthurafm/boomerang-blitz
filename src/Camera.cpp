@@ -11,7 +11,7 @@ Camera::Camera() {
 
     this->useFreeCamera = true;
 
-    this->lookAt = glm::vec4(0.5f, 0.5f, 1.8f, 1.0f);
+    this->lookAt = glm::vec4(0.5f, 0.8f, 0.0f, 1.0f);
 
     this->viewVector = normalize(this->getLookAt() - this->cartesianPosition);
 
@@ -36,10 +36,10 @@ glm::vec4 Camera::getViewVector() {
 
 // Atualiza o View Vector em câmera Look-At
 void Camera::updateViewVector() {
-    glm::vec4 vec;
-    vec.x = this->sphericPosition.distance * cos(this->sphericPosition.phi) * sin(this->sphericPosition.theta);
-    vec.y = this->sphericPosition.distance * sin(this->sphericPosition.phi);
-    vec.z = this->sphericPosition.distance * cos(this->sphericPosition.phi) * cos(this->sphericPosition.theta);
+    glm::vec4 vec = lookAt;
+    vec.x += this->sphericPosition.distance * cos(this->sphericPosition.phi) * sin(this->sphericPosition.theta);
+    vec.y += this->sphericPosition.distance * sin(this->sphericPosition.phi);
+    vec.z += this->sphericPosition.distance * cos(this->sphericPosition.phi) * cos(this->sphericPosition.theta);
     vec.w = 1.0f;
     this->viewVector = normalize(this->getLookAt() - vec);
 }
@@ -95,13 +95,17 @@ glm::mat4 Camera::getView() {
         return Matrix_Camera_View(this->cartesianPosition, this->viewVector, Camera::upVector);
     }
     else {
-        glm::vec4 vec;
-        vec.x = this->sphericPosition.distance * cos(this->sphericPosition.phi) * sin(this->sphericPosition.theta);
-        vec.y = this->sphericPosition.distance * sin(this->sphericPosition.phi);
-        vec.z = this->sphericPosition.distance * cos(this->sphericPosition.phi) * cos(this->sphericPosition.theta);
-        vec.w = 1.0f;
 
-        return Matrix_Camera_View(vec, this->viewVector, Camera::upVector);
+        glm::vec4 pos;
+        pos.x = this->sphericPosition.distance * cos(this->sphericPosition.phi) * sin(this->sphericPosition.theta);
+        pos.y = this->sphericPosition.distance * sin(this->sphericPosition.phi);
+        pos.z = this->sphericPosition.distance * cos(this->sphericPosition.phi) * cos(this->sphericPosition.theta);
+        pos.w = 1.0f;
+
+        glm::vec4 position = lookAt + pos;
+        position.w = 1.0f;
+
+        return Matrix_Camera_View(position, this->viewVector, Camera::upVector);
     }
 }
 

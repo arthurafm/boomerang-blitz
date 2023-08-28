@@ -223,9 +223,6 @@ void Model::updatePlayer(float delta_t, Camera &camera) {
     glm::vec4 w = -(normalize(camera.getViewVector()));
     glm::vec4 u = normalize(crossproduct(Camera::upVector, w));
 
-    if (!camera.isUseFreeCamera()) {
-        camera.setLookAt(glm::vec4(this->position, 1.0f));
-    }
     if (camera.keys.W){
         this->position -= glm::vec3(w.x, 0.0f, w.z) * speed * delta_t;
     }
@@ -238,6 +235,12 @@ void Model::updatePlayer(float delta_t, Camera &camera) {
     if (camera.keys.D){
         this->position += glm::vec3(u.x, 0.0f, u.z) * speed * delta_t;
     }
+
+    if (!camera.isUseFreeCamera()) {
+        glm::vec3 pos = this->position;
+        camera.setLookAt(glm::vec4(pos.x, pos.y + 0.7f, pos.z, 1.0f));
+    }
+
 }
 
 float Model::getRotation(){
