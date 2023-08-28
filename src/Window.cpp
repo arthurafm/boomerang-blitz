@@ -13,12 +13,13 @@
 /* Headers de classes do projeto */
 #include "Window.h"
 #include "Renderer.h"
-#include "Scene.h"
+#include "SceneObject.h"
 #include "Model.h"
 
 #define SCENERY 0
 #define ROBOT 1
 #define ZOMBIE 2
+#define BOOMERANG 3
 
 // Construtor do objeto Window
 Window::Window() {
@@ -104,6 +105,7 @@ void Window::run() {
     this->renderer.LoadTextureImage("../data/textures/floor.jpg");
     this->renderer.LoadTextureImage("../data/textures/robot/robot_albedo.tga");
     this->renderer.LoadTextureImage("../data/textures/zombie_diffuse.png");
+    this->renderer.LoadTextureImage("../data/textures/wood.jpg");
 
     // Cria modelo do cenário
     Model scenery(SCENERY,
@@ -140,6 +142,18 @@ void Window::run() {
                  this->renderer.virtualScene);
 
     this->renderer.models.push_back(zombie);
+
+    // Cria modelo do bumerange
+    Model boomerang(BOOMERANG,
+                    glm::vec3(-0.4f, 1.0f, 0.0f),
+                    glm::vec3(0.005f, 0.005f, 0.005f),
+                    glm::vec3(0.0f, 0.0f, 0.0f),
+                    0.0f,
+                    "the_boomerang",
+                    "../data/objects/boomerang.obj",
+                    this->renderer.virtualScene);
+
+    this->renderer.models.push_back(boomerang);
 
     this->renderer.initialize();
 

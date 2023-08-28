@@ -3,6 +3,7 @@
 //
 
 #include "Renderer.h"
+#include "collisions.h"
 
 // Construtor do renderizador
 Renderer::Renderer() {
@@ -47,6 +48,7 @@ void Renderer::LoadShadersFromFiles()
     glUniform1i(glGetUniformLocation(this->gpuProgramID, "PlaneTexture"), 0);
     glUniform1i(glGetUniformLocation(this->gpuProgramID, "RobotTexture"), 1);
     glUniform1i(glGetUniformLocation(this->gpuProgramID, "ZombieTexture"), 2);
+    glUniform1i(glGetUniformLocation(this->gpuProgramID, "BoomerangTexture"), 3);
     glUseProgram(0);
 }
 
@@ -295,9 +297,11 @@ void Renderer::render(GLFWwindow* window, Camera &camera, const float &aspectRat
         model = Matrix_Translate(object.getPosition().x, object.getPosition().y, object.getPosition().z);
         model *= Matrix_Scale(object.getScale().x, object.getScale().y, object.getScale().z);
 
+        object.updateBbox();
+
         // Se é o robô
         if (object.getId() == 1) {
-            object.updatePlayer(delta_t, camera);
+            object.updatePlayer(delta_t, camera, this->models[0]);
             model *= Matrix_Rotate_Y(object.getRotation());
         }
 

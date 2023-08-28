@@ -7,7 +7,7 @@
 
 #include "LoadedObj.h"
 #include "Camera.h"
-#include "Scene.h"
+#include "SceneObject.h"
 #include "matrices.h"
 #include "glad/glad.h"
 #include "Model.h"
@@ -45,7 +45,7 @@ class Renderer{
 
         std::vector<Model> models;
 
-        std::map<std::string, Scene> virtualScene;
+        std::map<std::string, SceneObject> virtualScene;
 
         void LoadShadersFromFiles(); // Carrega os shaders de vértice e fragmento, criando um programa de GPU
         void LoadTextureImage(const char* filename); // Função que carrega imagens de textura

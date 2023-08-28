@@ -9,7 +9,7 @@ Camera::Camera() {
 
     this->cartesianPosition = glm::vec4(0.4f, 0.8f, 0.0f, 1.0f);
 
-    this->useFreeCamera = true;
+    this->useFreeCamera = false;
 
     this->lookAt = glm::vec4(0.5f, 0.8f, 0.0f, 1.0f);
 

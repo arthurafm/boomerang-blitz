@@ -2,8 +2,8 @@
 // Created by Arthur on 8/12/2023.
 //
 
-#ifndef FCG_TRAB_FINAL_SCENE_H
-#define FCG_TRAB_FINAL_SCENE_H
+#ifndef FCG_TRAB_FINAL_SCENEOBJECT_H
+#define FCG_TRAB_FINAL_SCENEOBJECT_H
 
 // Headers de C++
 #include <string>
@@ -12,7 +12,7 @@
 #include <glad/glad.h>
 #include "glm/vec3.hpp"
 
-class Scene{
+class SceneObject{
     public:
         std::string  name;        // Nome do objeto
         size_t       first_index; // Índice do primeiro vértice dentro do vetor indices[] definido em BuildTrianglesAndAddToVirtualScene()
@@ -22,9 +22,9 @@ class Scene{
         glm::vec3    bbox_min; // Axis-Aligned Bounding Box do objeto
         glm::vec3    bbox_max;
 
-        Scene(std::string name, size_t first_index, size_t num_indices, GLenum rendering_mode, GLuint vertex_array_object_id, glm::vec3 bbox_min, glm::vec3 bbox_max);
-        Scene();
+        SceneObject(std::string name, size_t first_index, size_t num_indices, GLenum rendering_mode, GLuint vertex_array_object_id, glm::vec3 bbox_min, glm::vec3 bbox_max);
+        SceneObject();
 };
 
 
-#endif //FCG_TRAB_FINAL_SCENE_H
+#endif //FCG_TRAB_FINAL_SCENEOBJECT_H

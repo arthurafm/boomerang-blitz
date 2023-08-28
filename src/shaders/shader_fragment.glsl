@@ -18,7 +18,7 @@ uniform mat4 projection;
 #define SCENE 0
 #define ROBOT 1
 #define ZOMBIE 2
-#define SPHERE 3
+#define BOOMERANG 3
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -29,6 +29,7 @@ uniform vec4 bbox_max;
 uniform sampler2D PlaneTexture;
 uniform sampler2D RobotTexture;
 uniform sampler2D ZombieTexture;
+uniform sampler2D BoomerangTexture;
 
 // Cor final do fragmento.
 out vec4 color;
@@ -86,9 +87,9 @@ void main()
         Ka = Kd / 2.0;
         q = 32.0;
     }
-    else if ( object_id == SPHERE ) {
+    else if ( object_id == BOOMERANG ) {
         // Propriedades espectrais da esfera
-        Kd = vec3(0.8,0.08,0.1);
+        Kd = texture(BoomerangTexture, texcoords).rgb;
         Ks = vec3(0.8,0.8,0.8);
         Ka = Kd / 2.0;
         q = 32.0;

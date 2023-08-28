@@ -5,8 +5,9 @@
 #include "Model.h"
 #include "matrices.h"
 #include "glad/glad.h"
+#include "collisions.h"
 
-Model::Model(int id, glm::vec3 position, glm::vec3 scale, glm::vec3 direction, float rotation, const char* name, const char* path, std::map<std::string, Scene> &virtualScene) {
+Model::Model(int id, glm::vec3 position, glm::vec3 scale, glm::vec3 direction, float rotation, const char* name, const char* path, std::map<std::string, SceneObject> &virtualScene) {
     this->objectId = id;
     this->position = position;
     this->scale = scale;
@@ -79,7 +80,7 @@ void Model::ComputeNormals()
 }
 
 // Constrói triângulos para futura renderização a partir de um ObjModel.
-void Model::BuildTrianglesAndAddToVirtualScene(std::map<std::string, Scene> &virtualScene)
+void Model::BuildTrianglesAndAddToVirtualScene(std::map<std::string, SceneObject> &virtualScene)
 {
     GLuint vertex_array_object_id;
     glGenVertexArrays(1, &vertex_array_object_id);
@@ -119,6 +120,13 @@ void Model::BuildTrianglesAndAddToVirtualScene(std::map<std::string, Scene> &vir
                 model_coefficients.push_back( vz ); // Z
                 model_coefficients.push_back( 1.0f ); // W
 
+                bbox_min.x = std::min(bbox_min.x, vx);
+                bbox_min.y = std::min(bbox_min.y, vy);
+                bbox_min.z = std::min(bbox_min.z, vz);
+                bbox_max.x = std::max(bbox_max.x, vx);
+                bbox_max.y = std::max(bbox_max.y, vy);
+                bbox_max.z = std::max(bbox_max.z, vz);
+
                 if ( idx.normal_index != -1 )
                 {
                     const float nx = (this->obj).attrib.normals[3*idx.normal_index + 0];
@@ -142,7 +150,16 @@ void Model::BuildTrianglesAndAddToVirtualScene(std::map<std::string, Scene> &vir
 
         size_t last_index = indices.size() - 1;
 
-        Scene theobject((this->obj).shapes[shape].name, first_index, last_index - first_index + 1, GL_TRIANGLES, vertex_array_object_id, bbox_min, bbox_max);
+        SceneObject theobject((this->obj).shapes[shape].name, first_index, last_index - first_index + 1, GL_TRIANGLES, vertex_array_object_id, bbox_min, bbox_max);
+
+        theobject.bbox_max = bbox_max;
+        theobject.bbox_min = bbox_min;
+
+        this->bbox_max = bbox_max;
+        this->bbox_min = bbox_min;
+
+        this->x_difference = (this->bbox_max.x - this->bbox_min.x) / 2 * this->scale.x;
+        this->z_difference = (this->bbox_max.z - this->bbox_min.z) / 2 * this->scale.z;
 
         virtualScene[(this->obj).shapes[shape].name] = theobject;
     }
@@ -198,6 +215,7 @@ void Model::BuildTrianglesAndAddToVirtualScene(std::map<std::string, Scene> &vir
     glBindVertexArray(0);
 }
 
+
 glm::vec3 Model::getPosition(){
     return this->position;
 }
@@ -214,9 +232,11 @@ int Model::getId() const{
     return this->objectId;
 }
 
-void Model::updatePlayer(float delta_t, Camera &camera) {
+void Model::updatePlayer(float delta_t, Camera &camera, const Model& box) {
 
     float speed = 2.0f;
+
+    glm::vec3 newPosition = this->position;
 
     this->rotation = atan2f(this->direction.z, this->direction.x) - atan2f(camera.getViewVector().z, camera.getViewVector().x);
 
@@ -224,16 +244,23 @@ void Model::updatePlayer(float delta_t, Camera &camera) {
     glm::vec4 u = normalize(crossproduct(Camera::upVector, w));
 
     if (camera.keys.W){
-        this->position -= glm::vec3(w.x, 0.0f, w.z) * speed * delta_t;
+        newPosition -= glm::vec3(w.x, 0.0f, w.z) * speed * delta_t;
     }
     if (camera.keys.S){
-        this->position += glm::vec3(w.x, 0.0f, w.z) * speed * delta_t;
+        newPosition += glm::vec3(w.x, 0.0f, w.z) * speed * delta_t;
     }
     if (camera.keys.A){
-        this->position -= glm::vec3(u.x, 0.0f, u.z) * speed * delta_t;
+        newPosition -= glm::vec3(u.x, 0.0f, u.z) * speed * delta_t;
     }
     if (camera.keys.D){
-        this->position += glm::vec3(u.x, 0.0f, u.z) * speed * delta_t;
+        newPosition += glm::vec3(u.x, 0.0f, u.z) * speed * delta_t;
+    }
+
+    glm::vec3 newBbox_min = glm::vec3(newPosition.x - this->x_difference, newPosition.y, newPosition.z - this->z_difference);
+    glm::vec3 newBbox_max = glm::vec3(newPosition.x + this->x_difference, newPosition.y, newPosition.z + this->z_difference);
+
+    if (!collisions::CubeToBox(newBbox_min, newBbox_max, box.bbox_min, box.bbox_max)) {
+        this->position = newPosition;
     }
 
     if (!camera.isUseFreeCamera()) {
@@ -245,4 +272,9 @@ void Model::updatePlayer(float delta_t, Camera &camera) {
 
 float Model::getRotation(){
     return this->rotation;
+}
+
+void Model::updateBbox(){
+    this->bbox_max = glm::vec3(this->position.x + this->x_difference, this->position.y, this->position.z + this->z_difference);
+    this->bbox_min = glm::vec3(this->position.x - this->x_difference, this->position.y, this->position.z - this->z_difference);
 }

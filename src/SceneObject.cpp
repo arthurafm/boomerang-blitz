@@ -2,9 +2,9 @@
 // Created by Arthur on 8/12/2023.
 //
 
-#include "Scene.h"
+#include "SceneObject.h"
 
-Scene::Scene(std::string name, size_t first_index, size_t num_indices, GLenum rendering_mode, GLuint vertex_array_object_id, glm::vec3 bbox_min, glm::vec3 bbox_max) {
+SceneObject::SceneObject(std::string name, size_t first_index, size_t num_indices, GLenum rendering_mode, GLuint vertex_array_object_id, glm::vec3 bbox_min, glm::vec3 bbox_max) {
     this->name = name;
     this->first_index = first_index;
     this->num_indices = num_indices;
@@ -14,6 +14,6 @@ Scene::Scene(std::string name, size_t first_index, size_t num_indices, GLenum re
     this->bbox_max = bbox_max;
 }
 
-Scene::Scene() {
+SceneObject::SceneObject() {
 
 }
