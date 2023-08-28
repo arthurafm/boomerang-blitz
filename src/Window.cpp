@@ -28,6 +28,7 @@ Window::Window() {
     this->renderer = Renderer();
     this->lastCursorPosX = 0;
     this->lastCursorPosY = 0;
+    this->isPaused = true;
 }
 
 void Window::run() {
@@ -178,14 +179,32 @@ void Window::KeyCallback(int key, int scancode, int action, int mode) {
     // Se o usuário apertar a tecla C, a câmera é trocada
     if (key == GLFW_KEY_C && action == GLFW_PRESS) {
         this->camera.revertFreeCamera();
-//        Player::firstPerson = !Player::firstPerson;
+    }
+
+    // Se o usuário apertar a tecla Space, o jogo é pausado
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        this->isPaused = !this->isPaused;
+        if (this->isPaused) {
+            glfwSetInputMode(glfwGetCurrentContext(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
+        else {
+            glfwSetInputMode(glfwGetCurrentContext(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        }
+    }
+
+    if (this->isPaused) {
+        this->camera.keys.W = false;
+        this->camera.keys.A = false;
+        this->camera.keys.S = false;
+        this->camera.keys.D = false;
+
+        return;
     }
 
     // Se o usuário apertar as teclas de movimento
     if (key == GLFW_KEY_W) {
         if (action == GLFW_PRESS) {
             this->camera.keys.W = true;
-//            Player::keys.W = true;
         }
         else if (action == GLFW_RELEASE) {
             this->camera.keys.W = false;
@@ -194,7 +213,6 @@ void Window::KeyCallback(int key, int scancode, int action, int mode) {
     if (key == GLFW_KEY_A) {
         if (action == GLFW_PRESS) {
             this->camera.keys.A = true;
-//            Player::keys.A = true;
         }
         else if (action == GLFW_RELEASE) {
             this->camera.keys.A = false;
@@ -203,24 +221,21 @@ void Window::KeyCallback(int key, int scancode, int action, int mode) {
     if (key == GLFW_KEY_S) {
         if (action == GLFW_PRESS) {
             this->camera.keys.S = true;
-//            Player::keys.S = true;
         }
         else if (action == GLFW_RELEASE) {
             this->camera.keys.S = false;
-//            Player::keys.S = false;
 
         }
     }
     if (key == GLFW_KEY_D) {
         if (action == GLFW_PRESS) {
             this->camera.keys.D = true;
-//            Player::keys.D = true;
         }
         else if (action == GLFW_RELEASE) {
             this->camera.keys.D = false;
-//            Player::keys.D = false;
         }
     }
+
 }
 
 void Window::MouseButtonCallback(int button, int action, int mods) {
@@ -239,12 +254,15 @@ void Window::MouseButtonCallback(int button, int action, int mods) {
 
 void Window::CursorPosCallback(double xpos, double ypos) {
 
-    if (!this->camera.keys.M1)
-        return;
-
     // Deslocamento do cursor do mouse em x e y de coordenadas de tela!
     float dx = xpos - this->lastCursorPosX;
     float dy = ypos - this->lastCursorPosY;
+
+    if (this->isPaused) {
+        this->lastCursorPosX = xpos;
+        this->lastCursorPosY = ypos;
+        return;
+    }
 
     // Atualizamos parâmetros da câmera com os deslocamentos
     if (this->camera.isUseFreeCamera()) {
@@ -253,6 +271,7 @@ void Window::CursorPosCallback(double xpos, double ypos) {
         float angleX = dx/((float) this->screenWidth/2)  * 2 * M_PI;
         float angleY = dy/((float) this->screenHeight/2) * 2 * M_PI;
         this->camera.updateViewVector(angleX, angleY);
+        this->camera.updateSphericAngles(angleX);
     }
     else {
         this->camera.updateSphericAngles(dx, dy);

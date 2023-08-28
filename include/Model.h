@@ -27,7 +27,6 @@ class Model {
     public:
         Model(int id, glm::vec3 position, glm::vec3 scale, glm::vec3 direction, float rotation, const char* name, const char* path, std::map<std::string, Scene> &virtualScene);
 
-
         void updatePlayer(float delta_t, Camera &camera);
 
         glm::vec3 getPosition();

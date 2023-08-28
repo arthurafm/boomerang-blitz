@@ -25,6 +25,8 @@ class Window {
         double lastCursorPosX;
         double lastCursorPosY;
 
+        bool isPaused;
+
         /* Funções callback para comunicação com o sistema operacional e interação com o usuário */
         void FramebufferSizeCallback(int width, int height);
         static void ErrorCallback(int error, const char* description);

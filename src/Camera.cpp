@@ -66,7 +66,7 @@ void Camera::updateViewVector(float angleX, float angleY) {
 
 void Camera::updateSphericAngles(float dx, float dy) {
 
-    float newPhi = this->sphericPosition.phi + 0.01f * dy;
+    float newPhi = this->sphericPosition.phi + 0.003f * dy;
 
     // Em coordenadas esféricas, phi deve ficar entre -pi/2 e +pi/2.
     if (newPhi > M_PI_2) {
@@ -77,17 +77,24 @@ void Camera::updateSphericAngles(float dx, float dy) {
     }
 
     this->sphericPosition.phi = newPhi;
-    this->sphericPosition.theta -= 0.01f * dx;
+    this->sphericPosition.theta -= 0.003f * dx;
 }
 
-void Camera::updateSphericDistance(float distance){
+void Camera::updateSphericAngles(float angle) {
+    this->sphericPosition.theta -= angle;
+}
+
+void Camera::updateSphericDistance(float distance) {
 
     this->sphericPosition.distance -= 0.1f * distance;
+    if (this->useFreeCamera) {
+        this->useFreeCamera = false;
+    }
 
-    // Uma câmera look-at nunca pode estar exatamente "em cima" do ponto para onde ela está olhando.
-    const float verysmallnumber = std::numeric_limits<float>::epsilon();
-    if (this->sphericPosition.distance < verysmallnumber)
-        this->sphericPosition.distance = verysmallnumber;
+    if (this->sphericPosition.distance < 0.5f) {
+        this->sphericPosition.distance = 0.5f;
+        this->useFreeCamera = true;
+    }
 }
 
 glm::mat4 Camera::getView() {
