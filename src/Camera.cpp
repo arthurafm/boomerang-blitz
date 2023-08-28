@@ -11,7 +11,7 @@ Camera::Camera() {
 
     this->useFreeCamera = true;
 
-    this->lookAt = glm::vec4(0.2f, -0.2f, 0.0f, 1.0f);
+    this->lookAt = glm::vec4(0.5f, 0.5f, 1.8f, 1.0f);
 
     this->viewVector = normalize(this->getLookAt() - this->cartesianPosition);
 
@@ -105,7 +105,7 @@ glm::mat4 Camera::getView() {
     }
 }
 
-glm::mat4 Camera::getPerspective(float aspectRatio) {
+glm::mat4 Camera::getPerspective(float aspectRatio) const {
     return Matrix_Perspective(FOV, aspectRatio, this->nearPlane, this->farPlane);
 }
 
@@ -131,10 +131,6 @@ void Camera::updateCamera(float delta_t) {
     if (!this->useFreeCamera) {
         this->updateViewVector();
     }
-}
-
-void Camera::updateCamera(glm::vec4 pos) {
-    this->cartesianPosition = pos;
 }
 
 bool Camera::isUseFreeCamera() const{

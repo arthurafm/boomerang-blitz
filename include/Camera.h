@@ -61,13 +61,12 @@ class Camera {
         void setLookAt(glm::vec4 vec);
         glm::vec4 getViewVector();  // Vetor "view", sentido para onde a câmera está virada
         glm::mat4 getView();
-        glm::mat4 getPerspective(float aspectRatio);
+        glm::mat4 getPerspective(float aspectRatio) const;
 
         /* Características vetoriais */
         static constexpr glm::vec4 upVector = glm::vec4(0.0f,1.0f,0.0f,0.0f);
 
         void updateCamera(float delta_t);
-        void updateCamera(glm::vec4 pos);
 
         void updateViewVector(float angleX, float angleY);
 
@@ -76,6 +75,7 @@ class Camera {
 
         [[nodiscard]] bool isUseFreeCamera() const;
         void revertFreeCamera();
+
 
 
         /* Variáveis de controle de pressionar teclas e botões do mouse */

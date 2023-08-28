@@ -108,6 +108,8 @@ void Window::run() {
     Model scenery(SCENERY,
                   glm::vec3(0.0f, 0.0f, 0.0f),
                   glm::vec3(10.0f, 10.0f, 10.0f),
+                  glm::vec3(0.0f, 0.0f, 0.0f),
+                  0.0f,
                   "the_scene",
                   "../data/objects/scenery.obj",
                   this->renderer.virtualScene);
@@ -118,6 +120,8 @@ void Window::run() {
     Model robot(ROBOT,
                  glm::vec3(0.4f, 0.0f, 0.0f),
                  glm::vec3(1.0f, 1.0f, 1.0f),
+                 glm::vec3(0.0f, 0.0f, 1.0f),
+                 0.0f,
                  "the_robot",
                  "../data/objects/robot.obj",
                  this->renderer.virtualScene);
@@ -130,6 +134,8 @@ void Window::run() {
     Model zombie(ZOMBIE,
                  glm::vec3(-0.4f, 0.0f, 0.0f),
                  glm::vec3(0.5f, 0.5f, 0.5f),
+                 glm::vec3(0.0f, 0.0f, 0.0f),
+                 0.0f,
                  "the_zombie",
                  "../data/objects/zombie.obj",
                  this->renderer.virtualScene);

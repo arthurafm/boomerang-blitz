@@ -6,10 +6,12 @@
 #include "matrices.h"
 #include "glad/glad.h"
 
-Model::Model(int id, glm::vec3 position, glm::vec3 scale, const char* name, const char* path, std::map<std::string, Scene> &virtualScene) {
+Model::Model(int id, glm::vec3 position, glm::vec3 scale, glm::vec3 direction, float rotation, const char* name, const char* path, std::map<std::string, Scene> &virtualScene) {
     this->objectId = id;
     this->position = position;
     this->scale = scale;
+    this->direction = direction;
+    this->rotation = rotation;
     this->name = name;
     this->obj = LoadedObj(path);
     this->ComputeNormals();
@@ -215,8 +217,12 @@ int Model::getId() const{
 void Model::updatePlayer(float delta_t, Camera &camera) {
 
     float speed = 2.0f;
+
+    this->rotation = atan2f(this->direction.z, this->direction.x) - atan2f(camera.getViewVector().z, camera.getViewVector().x);
+
     glm::vec4 w = -(normalize(camera.getViewVector()));
     glm::vec4 u = normalize(crossproduct(Camera::upVector, w));
+
     if (!camera.isUseFreeCamera()) {
         camera.setLookAt(glm::vec4(this->position, 1.0f));
     }
@@ -232,5 +238,8 @@ void Model::updatePlayer(float delta_t, Camera &camera) {
     if (camera.keys.D){
         this->position += glm::vec3(u.x, 0.0f, u.z) * speed * delta_t;
     }
+}
 
+float Model::getRotation(){
+    return this->rotation;
 }

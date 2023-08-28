@@ -298,6 +298,7 @@ void Renderer::render(GLFWwindow* window, Camera &camera, const float &aspectRat
         // Se é o robô
         if (object.getId() == 1) {
             object.updatePlayer(delta_t, camera);
+            model *= Matrix_Rotate_Y(object.getRotation());
         }
 
         glUniformMatrix4fv(this->model_uniform, 1, GL_FALSE, glm::value_ptr(model));
