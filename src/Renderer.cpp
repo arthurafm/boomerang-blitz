@@ -309,6 +309,11 @@ void Renderer::render(GLFWwindow* window, Camera &camera, const float &aspectRat
             object.updatePlayer(delta_t, camera, this->models[SCENERY]);
             model *= Matrix_Rotate_Y(object.getRotation());
         }
+        if (object.getId() == ZOMBIE) {
+            if (collisions::CylinderToCylinder(object.bbox_min, object.bbox_max, this->models[ROBOT].bbox_min, this->models[ROBOT].bbox_max)) {
+                printf("\n\nColidiu!\n\n");
+            }
+        }
 
         glUniformMatrix4fv(this->model_uniform, 1, GL_FALSE, glm::value_ptr(model));
         glUniform1i(this->object_id_uniform, object.getId());
