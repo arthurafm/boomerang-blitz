@@ -32,7 +32,7 @@ Ao vencer as três fases, o jogador vence o jogo.
       No mínimo, sua aplicação deve utilizar três tipos de teste de colisão.  
       Estes testes devem ter algum propósito dentro da lógica da aplicação.  
       Os testesde colisão devem ser implementados em um arquivo à parte, nomeado "collisions.cpp"  
-- [ ] Modelos de iluminação de objetos geométricos.  
+- [X] Modelos de iluminação de objetos geométricos.  
       No mínimo, sua aplicação deve incluir objetos com os modelos de iluminação: difusa (Lambert) e Blinn-Phong.  
       No mínimo, um objeto com modelo de Gouraud.  
       No mínimo, um objeto com modelo de Phong.  
@@ -50,7 +50,6 @@ Ao vencer as três fases, o jogador vence o jogo.
 - [ ] Geração do cenário - REQ. 7, REQ. 8
 - [X] Geração do personagem - REQ. 2, REQ. 7, REQ. 8
 - [X] Movimentação do personagem - REQ. 1, REQ. 3, REQ. 10
-- [ ] Implementação do tiro comum - REQ. 5, REQ. 6, REQ. 7, REQ. 10
 - [ ] Implementação do bumerange - REQ. 5, REQ. 6, REQ. 7, REQ. 9
 - [ ] Geração dos inimigos - REQ. 2, REQ. 5, REQ. 7, REQ. 8
       
