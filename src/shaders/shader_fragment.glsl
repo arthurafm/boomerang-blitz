@@ -28,8 +28,10 @@ uniform vec4 bbox_max;
 // Variáveis para acesso das imagens de textura
 uniform sampler2D PlaneTexture;
 uniform sampler2D RobotTexture;
-uniform sampler2D ZombieTexture;
 uniform sampler2D BoomerangTexture;
+
+// Cor gerada por Gouraud
+in vec4 color_v;
 
 // Cor final do fragmento.
 out vec4 color;
@@ -46,7 +48,7 @@ void main()
     vec4 n = normalize(normal);
 
     // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
-    vec4 l = normalize(vec4(1.0,1.0,0.5,0.0));
+    vec4 l = normalize(vec4(0.0,3.5,0.0,0.0));
 
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v = normalize(camera_position - p);
@@ -64,65 +66,63 @@ void main()
     vec3 Ka; // Refletância ambiente
     float q; // Expoente especular para o modelo de iluminação de Phong
 
-    if ( object_id == SCENE )
-    {
-        // Propriedades espectrais da plano
-        Kd = texture(PlaneTexture, texcoords).rgb;
-        Ks = vec3(0.3,0.3,0.3);
-        Ka = vec3(0.0,0.0,0.0);
-        q = 20.0;
+    // Phong shading
+    if (object_id != ZOMBIE) {
+        if ( object_id == SCENE )
+        {
+            // Propriedades espectrais do cenário
+            Kd = texture(PlaneTexture, texcoords).rgb;
+            Ks = vec3(0.1,0.1,0.1);
+            Ka = vec3(0.0,0.0,0.0);
+            q = 50.0;
+        }
+        else if ( object_id == ROBOT )
+        {
+            // Propriedades espectrais do zumbi
+            Kd = texture(RobotTexture, texcoords).rgb;
+            Ks = vec3(0.8,0.8,0.8);
+            Ka = Kd / 2.0;
+            q = 32.0;
+        }
+        else if ( object_id == BOOMERANG ) {
+            // Propriedades espectrais da esfera
+            Kd = texture(BoomerangTexture, texcoords).rgb;
+            Ks = vec3(0.8,0.8,0.8);
+            Ka = Kd / 2.0;
+            q = 32.0;
+        }
+        else // Objeto desconhecido = preto
+        {
+            Kd = vec3(0.0,0.0,0.0);
+            Ks = vec3(0.0,0.0,0.0);
+            Ka = vec3(0.0,0.0,0.0);
+            q = 1.0;
+        }
+        // Espectro da fonte de iluminação
+        vec3 I = vec3(0.4,0.4,0.4);
+
+        // Espectro da luz ambiente
+        vec3 Ia = vec3(0.2,0.2,0.2);
+
+        // Termo difuso utilizando a lei dos cossenos de Lambert
+        vec3 lambert_diffuse_term = Kd * I * max(0, dot(n, l));
+
+        // Termo ambiente
+        vec3 ambient_term = Ka * Ia;
+
+        // Termo especular utilizando o modelo de iluminação de Phong
+        vec3 phong_specular_term = Ks * I * pow(max(0, dot(r, v)), q);
+
+        color.a = 1;
+
+        // Cor final do fragmento calculada com uma combinação dos termos difuso, especular, e ambiente.
+        color.rgb = lambert_diffuse_term + ambient_term + phong_specular_term;
+
+        // Cor final com correção gamma, considerando monitor sRGB.
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
     }
-    else if ( object_id == ZOMBIE )
-    {
-        // Propriedades espectrais do zumbi
-        Kd = texture(ZombieTexture, texcoords).rgb;
-        Ks = vec3(0.8,0.8,0.8);
-        Ka = Kd / 2.0;
-        q = 32.0;
+    else {
+        color = color_v;
     }
-    else if ( object_id == ROBOT ) {
-        // Propriedades espectrais do robô
-        Kd = texture(RobotTexture, texcoords).rgb;
-        Ks = vec3(0.8,0.8,0.8);
-        Ka = Kd / 2.0;
-        q = 32.0;
-    }
-    else if ( object_id == BOOMERANG ) {
-        // Propriedades espectrais da esfera
-        Kd = texture(BoomerangTexture, texcoords).rgb;
-        Ks = vec3(0.8,0.8,0.8);
-        Ka = Kd / 2.0;
-        q = 32.0;
-    }
-    else // Objeto desconhecido = preto
-    {
-        Kd = vec3(0.0,0.0,0.0);
-        Ks = vec3(0.0,0.0,0.0);
-        Ka = vec3(0.0,0.0,0.0);
-        q = 1.0;
-    }
-
-    // Espectro da fonte de iluminação
-    vec3 I = vec3(1.0,1.0,1.0);
-
-    // Espectro da luz ambiente
-    vec3 Ia = vec3(0.2,0.2,0.2);
-
-    // Termo difuso utilizando a lei dos cossenos de Lambert
-    vec3 lambert_diffuse_term = Kd * I * max(0, dot(n, l));
-
-    // Termo ambiente
-    vec3 ambient_term = Ka * Ia;
-
-    // Termo especular utilizando o modelo de iluminação de Phong
-    vec3 phong_specular_term = Ks * I * pow(max(0, dot(r, v)), q);
-
-    color.a = 1;
-
-    // Cor final do fragmento calculada com uma combinação dos termos difuso, especular, e ambiente.
-    color.rgb = lambert_diffuse_term + ambient_term + phong_specular_term;
-
-    // Cor final com correção gamma, considerando monitor sRGB.
-    color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
 } 
 
