@@ -273,8 +273,9 @@ void Renderer::DrawVirtualObject(const char* object_name)
     glBindVertexArray(0);
 }
 
-bool boomerangIsThrown, attackStarts = false;
+bool boomerangIsThrown, secondaryAttackStarts, primaryAttackStarts = false;
 float rotationBoomerang = 0.0f;
+float t = 0.0f;
 
 void Renderer::render(GLFWwindow* window, Camera &camera, const float &aspectRatio, float &initialTime) {
     // Define a cor de "fundo" do framebuffer como branco.
@@ -299,7 +300,7 @@ void Renderer::render(GLFWwindow* window, Camera &camera, const float &aspectRat
 
     camera.updateCamera(delta_t);
 
-    if (camera.keys.M1) {
+    if (camera.keys.M1 || camera.keys.M2) {
         boomerangIsThrown = true;
     }
 
@@ -310,16 +311,21 @@ void Renderer::render(GLFWwindow* window, Camera &camera, const float &aspectRat
         // Se é o bumerange
         if (object.getId() == BOOMERANG) {
 
-            if (boomerangIsThrown && !attackStarts) {
+            if (boomerangIsThrown && !primaryAttackStarts && !secondaryAttackStarts) {
                 object.setPosition(glm::vec3(this->models[ROBOT].getPosition().x, object.getPosition().y, this->models[ROBOT].getPosition().z));
                 object.updateOriginalPosition();
                 glm::vec3 attackDirection = glm::vec3(this->models[ROBOT].getPosition().x, this->models[ROBOT].getPosition().y, this->models[ROBOT].getPosition().z + 1.0f) - this->models[ROBOT].getPosition();
-                object.setDirection(glm::vec3(  attackDirection.x * cos(this->models[ROBOT].getRotation()) + attackDirection.z * sin(this->models[ROBOT].getRotation()),
+                object.setDirection(normalize(glm::vec3(  attackDirection.x * cos(this->models[ROBOT].getRotation()) + attackDirection.z * sin(this->models[ROBOT].getRotation()),
                                                 object.getPosition().y,
-                                                -attackDirection.x * sin(this->models[ROBOT].getRotation()) + attackDirection.z * cos(this->models[ROBOT].getRotation())));
-                attackStarts = true;
+                                                -attackDirection.x * sin(this->models[ROBOT].getRotation()) + attackDirection.z * cos(this->models[ROBOT].getRotation()))));
+                if (camera.keys.M1) {
+                    primaryAttackStarts = true;
+                }
+                if (camera.keys.M2) {
+                    secondaryAttackStarts = true;
+                }
             }
-            if (attackStarts) {
+            if (primaryAttackStarts) {
                 boomerangIsThrown = false;
                 float attackRange = 1.0f;
                 if (glm::distance(glm::vec2(object.getPosition().x, object.getPosition().z), glm::vec2(object.getOriginalPosition().x, object.getOriginalPosition().z)) <= attackRange) {
@@ -339,7 +345,45 @@ void Renderer::render(GLFWwindow* window, Camera &camera, const float &aspectRat
                 }
                 else {
                     rotationBoomerang = 0.0f;
-                    attackStarts = false;
+                    primaryAttackStarts = false;
+                }
+            }
+            if (secondaryAttackStarts) {
+                boomerangIsThrown = false;
+                float attackRange = 1.5f;
+                if (glm::distance(glm::vec2(object.getPosition().x, object.getPosition().z), glm::vec2(object.getOriginalPosition().x, object.getOriginalPosition().z)) <= attackRange) {
+                    float distanceToIntermediate = attackRange * 0.7f;
+                    float angleToIntermediate = M_PI_2;
+
+                    glm::vec3 p2;
+                    p2.x = object.getOriginalPosition().x + distanceToIntermediate * (cos(angleToIntermediate) * object.getDirection().x - sin(angleToIntermediate) * object.getDirection().z);
+                    p2.y = object.getPosition().y;
+                    p2.z = object.getOriginalPosition().z + distanceToIntermediate * (sin(angleToIntermediate) * object.getDirection().x + cos(angleToIntermediate) * object.getDirection().z);
+
+                    glm::vec3 p3 = object.getOriginalPosition() + attackRange * object.getDirection();
+
+                    glm::vec3 c12 = object.getOriginalPosition() + t * (p2 - object.getOriginalPosition());
+                    glm::vec3 c23 = p2 + t * (p3 - p2);
+                    glm::vec3 c = c12 + t * (c23 - c12);
+
+                    object.setPosition(c);
+                    model = Matrix_Translate(object.getPosition().x, object.getPosition().y, object.getPosition().z);
+                    model *= Matrix_Scale(object.getScale().x, object.getScale().y, object.getScale().z);
+                    model *= Matrix_Rotate_X(object.getRotation());
+                    model *= Matrix_Rotate_Z(rotationBoomerang);
+                    rotationBoomerang += 0.1f;
+                    t += 0.5f * delta_t;
+
+                    object.updateBbox();
+
+                    glUniformMatrix4fv(this->model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                    glUniform1i(this->object_id_uniform, object.getId());
+                    this->DrawVirtualObject(object.getName().c_str());
+                }
+                else {
+                    rotationBoomerang = 0.0f;
+                    t = 0.0f;
+                    secondaryAttackStarts = false;
                 }
             }
         }
@@ -357,7 +401,11 @@ void Renderer::render(GLFWwindow* window, Camera &camera, const float &aspectRat
             }
             if (object.getId() == ZOMBIE) {
                 if (collisions::CylinderToCylinder(object.bbox_min, object.bbox_max, this->models[ROBOT].bbox_min, this->models[ROBOT].bbox_max)) {
-                    printf("\n\nColidiu!\n\n");
+//                    printf("\n\nColidiu com robô!\n\n");
+                }
+                if (collisions::CubeToCylinder(object.bbox_min, object.bbox_max, this->models[BOOMERANG].bbox_min, this->models[BOOMERANG].bbox_max)
+                    && (primaryAttackStarts || secondaryAttackStarts)) {
+                    printf("\n\nColidiu com bumerange!\n\n");
                 }
             }
 

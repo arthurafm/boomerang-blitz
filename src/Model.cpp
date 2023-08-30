@@ -12,7 +12,7 @@ Model::Model(int id, glm::vec3 position, glm::vec3 scale, glm::vec3 direction, f
     this->position = position;
     this->originalPosition = position;
     this->scale = scale;
-    this->direction = direction;
+    this->direction = normalize(direction);
     this->rotation = rotation;
     this->name = name;
     this->obj = LoadedObj(path);
@@ -161,6 +161,8 @@ void Model::BuildTrianglesAndAddToVirtualScene(std::map<std::string, SceneObject
 
         this->x_difference = (this->bbox_max.x - this->bbox_min.x) / 2 * this->scale.x;
         this->z_difference = (this->bbox_max.z - this->bbox_min.z) / 2 * this->scale.z;
+
+        this->updateBbox();
 
         virtualScene[(this->obj).shapes[shape].name] = theobject;
     }

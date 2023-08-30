@@ -41,12 +41,37 @@ bool collisions::CylinderToCylinder(glm::vec3 cylinder1Bbox_min, glm::vec3 cylin
 
 bool collisions::CubeToCylinder(glm::vec3 cylinderBbox_min, glm::vec3 cylinderBbox_max, glm::vec3 cubeBbox_min, glm::vec3 cubeBbox_max) {
 
-    if (cubeBbox_max.x < cylinderBbox_min.x || cubeBbox_min.x > cylinderBbox_max.x)
-        return false;
+    // Calculate the center of the cylinder's base
+    glm::vec3 cylinderCenter = (cylinderBbox_min + cylinderBbox_max) * 0.5f;
+    cylinderCenter.y = cubeBbox_min.y; // Set it to the same height as the cube
 
-    if (cubeBbox_max.z < cylinderBbox_min.z || cubeBbox_min.z > cylinderBbox_max.z)
-        return false;
+    float cylinderRadius = 0.5f * glm::distance(cylinderBbox_min, cylinderBbox_max);
 
-    return true;
+    // Calculate the half dimensions of the cube
+    glm::vec3 cubeHalfDimensions = (cubeBbox_max - cubeBbox_min) * 0.5f;
 
+    // Calculate the displacement between the cube's center and the cylinder's base center
+    glm::vec3 displacement = cylinderCenter - (cubeBbox_min + cubeHalfDimensions);
+
+    // Clamp the displacement to be within the half dimensions of the cube
+    glm::vec3 clampedDisplacement = glm::clamp(displacement, -cubeHalfDimensions, cubeHalfDimensions);
+
+    // Calculate the closest point on the cube to the cylinder's base center
+    glm::vec3 closestPoint = cubeBbox_min + cubeHalfDimensions + clampedDisplacement;
+
+    // Calculate the vector between the closest point and the cylinder's base center
+    glm::vec3 collisionVector = cylinderCenter - closestPoint;
+
+    // Calculate the squared distance between the cylinder's base center and the closest point on the cube
+    float squaredDistance = glm::dot(collisionVector, collisionVector);
+
+    // Calculate the sum of the radii squared
+    float sumRadiiSquared = cylinderRadius * cylinderRadius;
+
+    // If the squared distance is less than the sum of the radii squared, there's a collision
+    if (squaredDistance < sumRadiiSquared) {
+        return true;
+    }
+
+    return false;
 }

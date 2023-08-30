@@ -145,7 +145,7 @@ void Window::run() {
 
     // Cria modelo do bumerange
     Model boomerang(BOOMERANG,
-                    glm::vec3(0.4f, 0.7f, 0.0f),
+                    glm::vec3(0.0f, 0.7f, 0.0f),
                     glm::vec3(0.005f, 0.005f, 0.005f),
                     glm::vec3(0.0f, 0.0f, 0.0f),
                     M_PI_2,
@@ -265,6 +265,14 @@ void Window::MouseButtonCallback(int button, int action, int mods) {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
     {
         this->camera.keys.M1 = false;
+    }
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+    {
+        this->camera.keys.M2 = true;
+    }
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
+    {
+        this->camera.keys.M2 = false;
     }
 }
 
