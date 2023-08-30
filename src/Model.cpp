@@ -10,6 +10,7 @@
 Model::Model(int id, glm::vec3 position, glm::vec3 scale, glm::vec3 direction, float rotation, const char* name, const char* path, std::map<std::string, SceneObject> &virtualScene) {
     this->objectId = id;
     this->position = position;
+    this->originalPosition = position;
     this->scale = scale;
     this->direction = direction;
     this->rotation = rotation;
@@ -270,11 +271,32 @@ void Model::updatePlayer(float delta_t, Camera &camera, const Model& box) {
 
 }
 
-float Model::getRotation(){
+float Model::getRotation() const{
     return this->rotation;
 }
 
 void Model::updateBbox(){
     this->bbox_max = glm::vec3(this->position.x + this->x_difference, this->position.y, this->position.z + this->z_difference);
     this->bbox_min = glm::vec3(this->position.x - this->x_difference, this->position.y, this->position.z - this->z_difference);
+}
+
+void Model::setPosition(glm::vec3 position){
+    this->position.x = position.x;
+    this->position.z = position.z;
+}
+
+void Model::setDirection(glm::vec3 direction) {
+    this->direction = direction;
+}
+
+void Model::updateOriginalPosition() {
+    this->originalPosition = this->position;
+}
+
+glm::vec3 Model::getOriginalPosition() {
+    return this->originalPosition;
+}
+
+glm::vec3 Model::getDirection(){
+    return this->direction;
 }

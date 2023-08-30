@@ -29,12 +29,24 @@ bool collisions::CylinderToCylinder(glm::vec3 cylinder1Bbox_min, glm::vec3 cylin
 
     float distance = glm::distance(cylinder1Center, cylinder2Center);
 
-    float sumOfRadiuses = cylinder1Radius + cylinder2Radius;
+    float sumOfRadii = cylinder1Radius + cylinder2Radius;
 
-    if (distance <= sumOfRadiuses) {
+    if (distance <= sumOfRadii) {
         return true; // Colidiu
     }
 
     return false;
 
 };
+
+bool collisions::CubeToCylinder(glm::vec3 cylinderBbox_min, glm::vec3 cylinderBbox_max, glm::vec3 cubeBbox_min, glm::vec3 cubeBbox_max) {
+
+    if (cubeBbox_max.x < cylinderBbox_min.x || cubeBbox_min.x > cylinderBbox_max.x)
+        return false;
+
+    if (cubeBbox_max.z < cylinderBbox_min.z || cubeBbox_min.z > cylinderBbox_max.z)
+        return false;
+
+    return true;
+
+}

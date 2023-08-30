@@ -24,6 +24,8 @@ class Model {
         float x_difference;
         float z_difference;
 
+        glm::vec3 originalPosition;
+
         void ComputeNormals();
         void BuildTrianglesAndAddToVirtualScene(std::map<std::string, SceneObject> &virtualScene);
 
@@ -38,10 +40,17 @@ class Model {
         void updateBbox();
 
         glm::vec3 getPosition();
+        glm::vec3 getDirection();
         glm::vec3 getScale();
-        float getRotation();
+        [[nodiscard]] float getRotation() const;
         std::string getName();
         [[nodiscard]] int getId() const;
+        glm::vec3 getOriginalPosition();
+
+        void setDirection(glm::vec3 direction);
+        void setPosition(glm::vec3 position);
+        void updateOriginalPosition();
+
 };
 
 

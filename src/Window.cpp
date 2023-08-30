@@ -145,10 +145,10 @@ void Window::run() {
 
     // Cria modelo do bumerange
     Model boomerang(BOOMERANG,
-                    glm::vec3(-0.4f, 1.0f, 0.0f),
+                    glm::vec3(0.4f, 0.7f, 0.0f),
                     glm::vec3(0.005f, 0.005f, 0.005f),
                     glm::vec3(0.0f, 0.0f, 0.0f),
-                    0.0f,
+                    M_PI_2,
                     "the_boomerang",
                     "../data/objects/boomerang.obj",
                     this->renderer.virtualScene);
@@ -253,15 +253,17 @@ void Window::KeyCallback(int key, int scancode, int action, int mode) {
 }
 
 void Window::MouseButtonCallback(int button, int action, int mods) {
+
+    if (this->isPaused) {
+        return;
+    }
+
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
-        // Se o usuário pressionou o botão esquerdo do mouse, guardamos a posição atual do cursor.
-        glfwGetCursorPos(glfwGetCurrentContext(), &this->lastCursorPosX, &this->lastCursorPosY);
         this->camera.keys.M1 = true;
     }
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
     {
-        // Quando o usuário soltar o botão esquerdo do mouse, atualizamos a variável
         this->camera.keys.M1 = false;
     }
 }
