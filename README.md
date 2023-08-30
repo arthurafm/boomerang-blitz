@@ -26,7 +26,7 @@ Ao vencer as três fases, o jogador vence o jogo.
       Através da interação com o teclado e/ou mouse, o usuário deve poder controlar transformações geométricas aplicadas a objetos virtuais, não somente controle da câmera.  
 - [X] Controle de câmeras virtuais.  
       No mínimo, sua aplicação deve implementar uma câmera look-at e uma câmera livre.  
-- [ ] No mínimo, um objeto virtual deve ser copiado com duas ou mais instâncias.   
+- [X] No mínimo, um objeto virtual deve ser copiado com duas ou mais instâncias.   
       Isto é, utilizando duas ou mais Model matrix aplicadas ao mesmo conjunto de vértices.  
 - [X] Testes de colisão entre objetos virtuais.  
       No mínimo, sua aplicação deve utilizar três tipos de teste de colisão.  
@@ -51,5 +51,5 @@ Ao vencer as três fases, o jogador vence o jogo.
 - [X] Geração do personagem - REQ. 2, REQ. 7, REQ. 8
 - [X] Movimentação do personagem - REQ. 1, REQ. 3, REQ. 10
 - [X] Implementação do bumerange - REQ. 5, REQ. 6, REQ. 7, REQ. 9
-- [ ] Geração dos inimigos - REQ. 2, REQ. 5, REQ. 7, REQ. 8
+- [X] Geração dos inimigos - REQ. 2, REQ. 5, REQ. 7, REQ. 8
       
