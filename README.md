@@ -28,7 +28,7 @@ Ao vencer as três fases, o jogador vence o jogo.
       No mínimo, sua aplicação deve implementar uma câmera look-at e uma câmera livre.  
 - [ ] No mínimo, um objeto virtual deve ser copiado com duas ou mais instâncias.   
       Isto é, utilizando duas ou mais Model matrix aplicadas ao mesmo conjunto de vértices.  
-- [ ] Testes de colisão entre objetos virtuais.  
+- [X] Testes de colisão entre objetos virtuais.  
       No mínimo, sua aplicação deve utilizar três tipos de teste de colisão.  
       Estes testes devem ter algum propósito dentro da lógica da aplicação.  
       Os testesde colisão devem ser implementados em um arquivo à parte, nomeado "collisions.cpp"  
@@ -38,7 +38,7 @@ Ao vencer as três fases, o jogador vence o jogo.
       No mínimo, um objeto com modelo de Phong.  
 - [X] Mapeamento de texturas.  
       Todos objetos virtuais de sua aplicação devem ter suas cores definidas através de texturas representadas por imagens, com no mínimo, três imagens distintas.  
-- [ ] Curvas de Bézier.  
+- [X] Curvas de Bézier.  
       No mínimo um objeto virtual de sua aplicação deve ter sua movimentação definida através de uma curva de Bézier cúbica. O objeto deve se movimentar de forma suave ao longo do espaço em um caminho curvo (não reto).  
 - [X] Animação de Movimento baseada no tempo.  
       Todas as movimentações de objetos, incluindo da câmera, devem ser computadas baseado no tempo.  
@@ -50,6 +50,6 @@ Ao vencer as três fases, o jogador vence o jogo.
 - [ ] Geração do cenário - REQ. 7, REQ. 8
 - [X] Geração do personagem - REQ. 2, REQ. 7, REQ. 8
 - [X] Movimentação do personagem - REQ. 1, REQ. 3, REQ. 10
-- [ ] Implementação do bumerange - REQ. 5, REQ. 6, REQ. 7, REQ. 9
+- [X] Implementação do bumerange - REQ. 5, REQ. 6, REQ. 7, REQ. 9
 - [ ] Geração dos inimigos - REQ. 2, REQ. 5, REQ. 7, REQ. 8
       
