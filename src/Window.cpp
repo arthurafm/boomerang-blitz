@@ -29,7 +29,7 @@ Window::Window() {
     this->renderer = Renderer();
     this->lastCursorPosX = 0;
     this->lastCursorPosY = 0;
-    this->isPaused = true;
+    this->isPaused_ = true;
 }
 
 void Window::run() {
@@ -159,10 +159,11 @@ void Window::run() {
 
     // Variável para movimentação baseada em tempo
     auto prevTime = (float) glfwGetTime();
+    auto spawnTime = prevTime;
 
     // Renderização até o usuário fechar a janela
     while (!glfwWindowShouldClose(window)) {
-        this->renderer.render(window, this->camera, ((float) this->screenWidth / (float) this->screenHeight), prevTime);
+        this->renderer.render(window, this->isPaused_, this->camera, ((float) this->screenWidth / (float) this->screenHeight), prevTime, spawnTime);
     }
 
     // Finaliza o uso do sistema operacional
@@ -197,8 +198,8 @@ void Window::KeyCallback(int key, int scancode, int action, int mode) {
 
     // Se o usuário apertar a tecla Space, o jogo é pausado
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-        this->isPaused = !this->isPaused;
-        if (this->isPaused) {
+        this->isPaused_ = !this->isPaused_;
+        if (this->isPaused_) {
             glfwSetInputMode(glfwGetCurrentContext(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         }
         else {
@@ -206,7 +207,7 @@ void Window::KeyCallback(int key, int scancode, int action, int mode) {
         }
     }
 
-    if (this->isPaused) {
+    if (this->isPaused_) {
         this->camera.keys.W = false;
         this->camera.keys.A = false;
         this->camera.keys.S = false;
@@ -254,7 +255,7 @@ void Window::KeyCallback(int key, int scancode, int action, int mode) {
 
 void Window::MouseButtonCallback(int button, int action, int mods) {
 
-    if (this->isPaused) {
+    if (this->isPaused_) {
         return;
     }
 
@@ -282,7 +283,7 @@ void Window::CursorPosCallback(double xpos, double ypos) {
     float dx = xpos - this->lastCursorPosX;
     float dy = ypos - this->lastCursorPosY;
 
-    if (this->isPaused) {
+    if (this->isPaused_) {
         this->lastCursorPosX = xpos;
         this->lastCursorPosY = ypos;
         return;

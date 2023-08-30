@@ -18,6 +18,25 @@
 #include <map>
 #include <stb_image.h>
 
+struct enemyData {
+    glm::vec3 position;
+    glm::vec3 direction;
+    float rotation;
+    glm::vec3 bbox_min;
+    glm::vec3 bbox_max;
+    float speed;
+
+    enemyData() {
+        this->position = glm::vec3(0.0f, 0.0f, 0.0f);
+        this->direction = glm::vec3(0.0f, 0.0f, 0.0f);
+        this->rotation = 0.0f;
+        this->bbox_min = glm::vec3(0.0f, 0.0f, 0.0f);
+        this->bbox_max = glm::vec3(0.0f, 0.0f, 0.0f);
+        this->speed = 0.0f;
+    }
+
+};
+
 class Renderer{
     private:
         // Variáveis que definem um programa de GPU (shaders).
@@ -50,7 +69,7 @@ class Renderer{
         void LoadShadersFromFiles(); // Carrega os shaders de vértice e fragmento, criando um programa de GPU
         void LoadTextureImage(const char* filename); // Função que carrega imagens de textura
 
-        void render(GLFWwindow* window, Camera &camera, const float &aspectRatio, float &initialTime);
+        void render(GLFWwindow* window, bool isPaused, Camera &camera, const float &aspectRatio, float &initialTime, float &spawnTime);
 
 
 

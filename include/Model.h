@@ -21,9 +21,6 @@ class Model {
         glm::vec3 direction;
         float rotation;
 
-        float x_difference;
-        float z_difference;
-
         glm::vec3 originalPosition;
 
         void ComputeNormals();
@@ -33,6 +30,9 @@ class Model {
         Model(int id, glm::vec3 position, glm::vec3 scale, glm::vec3 direction, float rotation, const char* name, const char* path, std::map<std::string, SceneObject> &virtualScene);
 
         void updatePlayer(float delta_t, Camera &camera, const Model& box);
+
+        float x_difference;
+        float z_difference;
 
         glm::vec3 bbox_min; // Axis-Aligned Bounding Box do objeto
         glm::vec3 bbox_max;
