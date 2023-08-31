@@ -69,7 +69,7 @@ class Renderer{
         void LoadShadersFromFiles(); // Carrega os shaders de vértice e fragmento, criando um programa de GPU
         void LoadTextureImage(const char* filename); // Função que carrega imagens de textura
 
-        void render(GLFWwindow* window, bool isPaused, Camera &camera, const float &aspectRatio, float &initialTime, float &spawnTime);
+        bool render(GLFWwindow* window, bool isPaused, Camera &camera, const float &aspectRatio, float &initialTime, float &spawnTime);
 
 
 

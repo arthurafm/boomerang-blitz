@@ -110,7 +110,7 @@ void Window::run() {
     // Cria modelo do cenário
     Model scenery(SCENERY,
                   glm::vec3(0.0f, 0.0f, 0.0f),
-                  glm::vec3(10.0f, 10.0f, 10.0f),
+                  glm::vec3(8.0f, 8.0f, 8.0f),
                   glm::vec3(0.0f, 0.0f, 0.0f),
                   0.0f,
                   "the_scene",
@@ -146,7 +146,7 @@ void Window::run() {
     // Cria modelo do bumerange
     Model boomerang(BOOMERANG,
                     glm::vec3(0.0f, 0.7f, 0.0f),
-                    glm::vec3(0.005f, 0.005f, 0.005f),
+                    glm::vec3(0.01f, 0.01f, 0.01f),
                     glm::vec3(0.0f, 0.0f, 0.0f),
                     M_PI_2,
                     "the_boomerang",
@@ -163,7 +163,9 @@ void Window::run() {
 
     // Renderização até o usuário fechar a janela
     while (!glfwWindowShouldClose(window)) {
-        this->renderer.render(window, this->isPaused_, this->camera, ((float) this->screenWidth / (float) this->screenHeight), prevTime, spawnTime);
+        if (!this->renderer.render(window, this->isPaused_, this->camera, ((float) this->screenWidth / (float) this->screenHeight), prevTime, spawnTime)) {
+            break;
+        }
     }
 
     // Finaliza o uso do sistema operacional
