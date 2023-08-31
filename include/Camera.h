@@ -64,7 +64,7 @@ class Camera {
         glm::mat4 getPerspective(float aspectRatio) const;
 
         /* Características vetoriais */
-        static constexpr glm::vec4 upVector = glm::vec4(0.0f,1.0f,0.0f,0.0f);
+        static glm::vec4 upVector;
 
         void updateCamera(float delta_t);
 

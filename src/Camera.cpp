@@ -4,6 +4,8 @@
 
 #include "Camera.h"
 
+glm::vec4 Camera::upVector = glm::vec4(0.0f,1.0f,0.0f,0.0f);
+
 // Construtor do objeto Camera
 Camera::Camera() {
 
