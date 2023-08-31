@@ -12,8 +12,7 @@ Shooter de ondas inspirado em Binding of Isaac/Journey of the Prairie King (mini
 
 O jogador nascerá no meio de um mapa quadrangular onde inimigos virão dos 4 pontos cardeais em direção a ele.  
 Ele está equipado com uma pistola e um bumerange, acessáveis atráves de hotkeys.   
-Ao vencer uma certa quantidade de inimigos, o mapa é alterado para uma próxima fase, em um total de três fases, na qual os inimigos estão mais resistentes e rápidos.   
-Ao vencer as três fases, o jogador vence o jogo.  
+Ao vencer uma certa quantidade de inimigos, o jogo passa para uma próxima fase, em um total de três fases, na qual os inimigos estão mais rápidos e numerosos.
 
 ## Requisitos
 
@@ -47,7 +46,7 @@ Ao vencer as três fases, o jogador vence o jogo.
 
 - [X] Câmera em 1ª pessoa - REQ. 4
 - [X] Câmera em 3ª pessoa - REQ. 4
-- [ ] Geração do cenário - REQ. 7, REQ. 8
+- [X] Geração do cenário - REQ. 7, REQ. 8
 - [X] Geração do personagem - REQ. 2, REQ. 7, REQ. 8
 - [X] Movimentação do personagem - REQ. 1, REQ. 3, REQ. 10
 - [X] Implementação do bumerange - REQ. 5, REQ. 6, REQ. 7, REQ. 9
