@@ -30,6 +30,20 @@ class Model {
         Model(int id, glm::vec3 position, glm::vec3 scale, glm::vec3 direction, float rotation, const char* name, const char* path, std::map<std::string, SceneObject> &virtualScene);
 
         void updatePlayer(float delta_t, Camera &camera, const Model& box);
+        bool updateBoomerang(bool &boomerangIsThrown,
+                                bool &primaryAttackStarts,
+                                bool &secondaryAttackStarts,
+                                bool &M1,
+                                bool &M2,
+                                bool &isPaused,
+                                float &rotationBoomerang,
+                                float &t,
+                                float &delta_t,
+                                glm::vec3 &robotPosition,
+                                float robotRotation,
+                                glm::vec3 &sceneryBboxMin,
+                                glm::vec3 &sceneryBboxMax,
+                                glm::mat4 &model);
 
         float x_difference;
         float z_difference;

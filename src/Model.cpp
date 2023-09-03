@@ -303,3 +303,110 @@ glm::vec3 Model::getOriginalPosition() {
 glm::vec3 Model::getDirection(){
     return this->direction;
 }
+
+bool Model::updateBoomerang(bool &boomerangIsThrown,
+                            bool &primaryAttackStarts,
+                            bool &secondaryAttackStarts,
+                            bool &M1,
+                            bool &M2,
+                            bool &isPaused,
+                            float &rotationBoomerang,
+                            float &t,
+                            float &delta_t,
+                            glm::vec3 &robotPosition,
+                            float robotRotation,
+                            glm::vec3 &sceneryBboxMin,
+                            glm::vec3 &sceneryBboxMax,
+                            glm::mat4 &model){
+    float boomerangSpeed = 6.0f;
+
+    if (boomerangIsThrown && !primaryAttackStarts && !secondaryAttackStarts) {
+        this->setPosition(glm::vec3(robotPosition.x, robotPosition.y, robotPosition.z));
+        this->updateOriginalPosition();
+
+        this->updateBbox();
+
+        glm::vec3 attackDirection = glm::vec3(robotPosition.x, robotPosition.y, robotPosition.z + 1.0f) - robotPosition;
+        this->setDirection(normalize(glm::vec3(  attackDirection.x * cos(robotRotation) + attackDirection.z * sin(robotRotation),
+                                                  this->getPosition().y,
+                                                  -attackDirection.x * sin(robotRotation) + attackDirection.z * cos(robotRotation))));
+        if (M1) {
+            primaryAttackStarts = true;
+        }
+        if (M2) {
+            secondaryAttackStarts = true;
+        }
+    }
+    if (primaryAttackStarts) {
+        boomerangIsThrown = false;
+        float attackRange = 5.0f;
+
+        if (glm::distance(glm::vec2(this->getPosition().x, this->getPosition().z), glm::vec2(this->getOriginalPosition().x, this->getOriginalPosition().z)) <= attackRange) {
+
+            if (!isPaused) {
+                this->setPosition(this->getPosition() + this->getDirection() * delta_t * boomerangSpeed);
+                rotationBoomerang += 0.1f;
+            }
+
+            if (!collisions::CubeToBox(this->bbox_min, this->bbox_max, sceneryBboxMin, sceneryBboxMax)) {
+                model = Matrix_Translate(this->getPosition().x, this->getPosition().y, this->getPosition().z);
+                model *= Matrix_Scale(this->getScale().x, this->getScale().y, this->getScale().z);
+                model *= Matrix_Rotate_X(this->getRotation());
+                model *= Matrix_Rotate_Z(rotationBoomerang);
+
+                this->updateBbox();
+
+                return true;
+            }
+        }
+        else {
+            rotationBoomerang = 0.0f;
+            primaryAttackStarts = false;
+            return false;
+        }
+    }
+    if (secondaryAttackStarts) {
+        boomerangIsThrown = false;
+        float attackRange = 7.5f;
+        if (glm::distance(glm::vec2(this->getPosition().x, this->getPosition().z), glm::vec2(this->getOriginalPosition().x, this->getOriginalPosition().z)) <= attackRange) {
+
+            if (!isPaused) {
+                float distanceToIntermediate = attackRange * 0.7f;
+                float angleToIntermediate = M_PI_2;
+
+                glm::vec3 p2;
+                p2.x = this->getOriginalPosition().x + distanceToIntermediate * (cos(angleToIntermediate) * this->getDirection().x - sin(angleToIntermediate) * this->getDirection().z);
+                p2.y = this->getPosition().y;
+                p2.z = this->getOriginalPosition().z + distanceToIntermediate * (sin(angleToIntermediate) * this->getDirection().x + cos(angleToIntermediate) * this->getDirection().z);
+
+                glm::vec3 p3 = this->getOriginalPosition() + attackRange * this->getDirection();
+
+                glm::vec3 c12 = this->getOriginalPosition() + t * (p2 - this->getOriginalPosition());
+                glm::vec3 c23 = p2 + t * (p3 - p2);
+                glm::vec3 c = c12 + t * (c23 - c12);
+
+                this->setPosition(c);
+
+                rotationBoomerang += 0.1f;
+                t += 0.5f * delta_t * boomerangSpeed;
+            }
+
+            if (!collisions::CubeToBox(this->bbox_min, this->bbox_max, sceneryBboxMin, sceneryBboxMax)) {
+                model = Matrix_Translate(this->getPosition().x, this->getPosition().y, this->getPosition().z);
+                model *= Matrix_Scale(this->getScale().x, this->getScale().y, this->getScale().z);
+                model *= Matrix_Rotate_X(this->getRotation());
+                model *= Matrix_Rotate_Z(rotationBoomerang);
+
+                this->updateBbox();
+
+                return true;
+            }
+        }
+        else {
+            rotationBoomerang = 0.0f;
+            t = 0.0f;
+            secondaryAttackStarts = false;
+            return false;
+        }
+    }
+}

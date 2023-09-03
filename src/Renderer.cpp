@@ -10,6 +10,8 @@
 #define ZOMBIE 2
 #define BOOMERANG 3
 
+
+
 // Construtor do renderizador
 Renderer::Renderer() {
     this->gpuProgramID = 0;
@@ -273,7 +275,6 @@ void Renderer::DrawVirtualObject(const char* object_name)
     glBindVertexArray(0);
 }
 
-// Variáveis globais de controle de estado de jogo
 bool boomerangIsThrown, secondaryAttackStarts, primaryAttackStarts = false;
 float rotationBoomerang = 0.0f;
 float t = 0.0f;
@@ -282,28 +283,7 @@ std::vector<enemyData> enemies;
 int enemiesKilled = 0;
 int enemiesSpawned = 0;
 
-// Função de renderização
-bool Renderer::render(GLFWwindow* window, bool isPaused, Camera &camera, const float &aspectRatio, float &initialTime, float &spawnTime) {
-    // Define a cor de "fundo" do framebuffer como branco.
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-    // "Pintamos" todos os pixels do framebuffer com a cor definida acima,
-    // e também resetamos todos os pixels do Z-buffer (depth buffer).
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Pedimos para a GPU utilizar o programa de GPU criado acima (contendo
-    // os shaders de vértice e fragmentos).
-    glUseProgram(this->gpuProgramID);
-
-    // Enviamos as matrizes "view" e "projection" para a placa de vídeo.
-    glUniformMatrix4fv(this->view_uniform       , 1 , GL_FALSE , glm::value_ptr(camera.getView()));
-    glUniformMatrix4fv(this->projection_uniform , 1 , GL_FALSE , glm::value_ptr(camera.getPerspective(aspectRatio)));
-
-    // Variáveis ligadas a movimentação baseada em tempo
-    float currentTime = glfwGetTime();
-    float delta_t = currentTime - initialTime;
-    initialTime = currentTime;
-
+void updateGameStatus (int &phase, int &enemiesKilled, int &enemiesSpawned) {
     if (phase == 0 && enemiesKilled == 16) {
         phase++;
         enemiesKilled = 0;
@@ -314,13 +294,12 @@ bool Renderer::render(GLFWwindow* window, bool isPaused, Camera &camera, const f
         enemiesKilled = 0;
         enemiesSpawned = 0;
     }
+}
 
+void generateZombies (float &currentTime, float &spawnTime, float &x_difference, float &z_difference, bool &isPaused, float xDifference, float zDdifference) {
     float spawn_delta_t = currentTime - spawnTime;
     float spawningTime = 5.0f - (float) phase;
     if (spawn_delta_t >= spawningTime && !isPaused){
-        float x_difference = this->models[ZOMBIE].x_difference;
-        float z_difference = this->models[ZOMBIE].z_difference;
-
         if ((phase == 0 && enemiesSpawned < 16)
             || (phase == 1 && enemiesSpawned < 32)
             || (phase == 2)) {
@@ -363,6 +342,32 @@ bool Renderer::render(GLFWwindow* window, bool isPaused, Camera &camera, const f
     if (isPaused) {
         spawnTime += spawn_delta_t;
     }
+}
+
+bool Renderer::render(GLFWwindow* window, bool isPaused, Camera &camera, const float &aspectRatio, float &initialTime, float &spawnTime) {
+    // Define a cor de "fundo" do framebuffer como branco.
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+    // "Pintamos" todos os pixels do framebuffer com a cor definida acima,
+    // e também resetamos todos os pixels do Z-buffer (depth buffer).
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Pedimos para a GPU utilizar o programa de GPU criado acima (contendo
+    // os shaders de vértice e fragmentos).
+    glUseProgram(this->gpuProgramID);
+
+    // Enviamos as matrizes "view" e "projection" para a placa de vídeo.
+    glUniformMatrix4fv(this->view_uniform       , 1 , GL_FALSE , glm::value_ptr(camera.getView()));
+    glUniformMatrix4fv(this->projection_uniform , 1 , GL_FALSE , glm::value_ptr(camera.getPerspective(aspectRatio)));
+
+    // Variáveis ligadas a movimentação baseada em tempo
+    float currentTime = glfwGetTime();
+    float delta_t = currentTime - initialTime;
+    initialTime = currentTime;
+
+    updateGameStatus (phase, enemiesKilled, enemiesSpawned);
+
+    generateZombies (currentTime, spawnTime, this->models[ZOMBIE].x_difference, this->models[ZOMBIE].z_difference, isPaused, this->models[ZOMBIE].x_difference, this->models[ZOMBIE].z_difference);
 
     camera.updateCamera(delta_t);
 
@@ -376,99 +381,26 @@ bool Renderer::render(GLFWwindow* window, bool isPaused, Camera &camera, const f
 
         // Se é o bumerange
         if (object.getId() == BOOMERANG) {
-
-            float boomerangSpeed = 6.0f;
-
-            if (boomerangIsThrown && !primaryAttackStarts && !secondaryAttackStarts) {
-                object.setPosition(glm::vec3(this->models[ROBOT].getPosition().x, object.getPosition().y, this->models[ROBOT].getPosition().z));
-                object.updateOriginalPosition();
-
-                object.updateBbox();
-
-                glm::vec3 attackDirection = glm::vec3(this->models[ROBOT].getPosition().x, this->models[ROBOT].getPosition().y, this->models[ROBOT].getPosition().z + 1.0f) - this->models[ROBOT].getPosition();
-                object.setDirection(normalize(glm::vec3(  attackDirection.x * cos(this->models[ROBOT].getRotation()) + attackDirection.z * sin(this->models[ROBOT].getRotation()),
-                                                object.getPosition().y,
-                                                -attackDirection.x * sin(this->models[ROBOT].getRotation()) + attackDirection.z * cos(this->models[ROBOT].getRotation()))));
-                if (camera.keys.M1) {
-                    primaryAttackStarts = true;
-                }
-                if (camera.keys.M2) {
-                    secondaryAttackStarts = true;
-                }
-            }
-            if (primaryAttackStarts) {
-                boomerangIsThrown = false;
-                float attackRange = 5.0f;
-
-                if (glm::distance(glm::vec2(object.getPosition().x, object.getPosition().z), glm::vec2(object.getOriginalPosition().x, object.getOriginalPosition().z)) <= attackRange) {
-
-                    if (!isPaused) {
-                        object.setPosition(object.getPosition() + object.getDirection() * delta_t * boomerangSpeed);
-                        rotationBoomerang += 0.1f;
-                    }
-
-                    if (!collisions::CubeToBox(object.bbox_min, object.bbox_max, this->models[SCENERY].bbox_min, this->models[SCENERY].bbox_max)) {
-                        model = Matrix_Translate(object.getPosition().x, object.getPosition().y, object.getPosition().z);
-                        model *= Matrix_Scale(object.getScale().x, object.getScale().y, object.getScale().z);
-                        model *= Matrix_Rotate_X(object.getRotation());
-                        model *= Matrix_Rotate_Z(rotationBoomerang);
-
-                        object.updateBbox();
-
-                        glUniformMatrix4fv(this->model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-                        glUniform1i(this->object_id_uniform, object.getId());
-                        this->DrawVirtualObject(object.getName().c_str());
-                    }
-                }
-                else {
-                    rotationBoomerang = 0.0f;
-                    primaryAttackStarts = false;
-                }
-            }
-            if (secondaryAttackStarts) {
-                boomerangIsThrown = false;
-                float attackRange = 7.5f;
-                if (glm::distance(glm::vec2(object.getPosition().x, object.getPosition().z), glm::vec2(object.getOriginalPosition().x, object.getOriginalPosition().z)) <= attackRange) {
-
-                    if (!isPaused) {
-                        float distanceToIntermediate = attackRange * 0.7f;
-                        float angleToIntermediate = M_PI_2;
-
-                        glm::vec3 p2;
-                        p2.x = object.getOriginalPosition().x + distanceToIntermediate * (cos(angleToIntermediate) * object.getDirection().x - sin(angleToIntermediate) * object.getDirection().z);
-                        p2.y = object.getPosition().y;
-                        p2.z = object.getOriginalPosition().z + distanceToIntermediate * (sin(angleToIntermediate) * object.getDirection().x + cos(angleToIntermediate) * object.getDirection().z);
-
-                        glm::vec3 p3 = object.getOriginalPosition() + attackRange * object.getDirection();
-
-                        glm::vec3 c12 = object.getOriginalPosition() + t * (p2 - object.getOriginalPosition());
-                        glm::vec3 c23 = p2 + t * (p3 - p2);
-                        glm::vec3 c = c12 + t * (c23 - c12);
-
-                        object.setPosition(c);
-
-                        rotationBoomerang += 0.1f;
-                        t += 0.5f * delta_t * boomerangSpeed;
-                    }
-
-                    if (!collisions::CubeToBox(object.bbox_min, object.bbox_max, this->models[SCENERY].bbox_min, this->models[SCENERY].bbox_max)) {
-                        model = Matrix_Translate(object.getPosition().x, object.getPosition().y, object.getPosition().z);
-                        model *= Matrix_Scale(object.getScale().x, object.getScale().y, object.getScale().z);
-                        model *= Matrix_Rotate_X(object.getRotation());
-                        model *= Matrix_Rotate_Z(rotationBoomerang);
-
-                        object.updateBbox();
-
-                        glUniformMatrix4fv(this->model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-                        glUniform1i(this->object_id_uniform, object.getId());
-                        this->DrawVirtualObject(object.getName().c_str());
-                    }
-                }
-                else {
-                    rotationBoomerang = 0.0f;
-                    t = 0.0f;
-                    secondaryAttackStarts = false;
-                }
+            glm::vec3 robotPosition = glm::vec3(this->models[ROBOT].getPosition().x,
+                                                this->models[ROBOT].getPosition().y,
+                                                this->models[ROBOT].getPosition().z);
+            if (object.updateBoomerang(boomerangIsThrown,
+                                       primaryAttackStarts,
+                                       secondaryAttackStarts,
+                                       camera.keys.M1,
+                                       camera.keys.M2,
+                                       isPaused,
+                                       rotationBoomerang,
+                                       t,
+                                       delta_t,
+                                       robotPosition,
+                                       this->models[ROBOT].getRotation(),
+                                       this->models[SCENERY].bbox_min,
+                                       this->models[SCENERY].bbox_max,
+                                       model)) {
+                glUniformMatrix4fv(this->model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+                glUniform1i(this->object_id_uniform, object.getId());
+                this->DrawVirtualObject(object.getName().c_str());
             }
         }
         else if (object.getId() == ZOMBIE) {
