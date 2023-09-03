@@ -1,7 +1,3 @@
-//
-// Created by Arthur on 8/27/2023.
-//
-
 #ifndef FCG_TRAB_FINAL_MODEL_H
 #define FCG_TRAB_FINAL_MODEL_H
 
@@ -13,6 +9,8 @@
 
 class Model {
     private:
+
+        // Características do modelo
         glm::vec3 scale;
         std::string name;
         LoadedObj obj;
@@ -21,15 +19,20 @@ class Model {
         glm::vec3 direction;
         float rotation;
 
+        // Posição original do modelo - para cálculos de direção e movimentação
         glm::vec3 originalPosition;
 
+        // Funções para adição na cena virutal
         void ComputeNormals();
         void BuildTrianglesAndAddToVirtualScene(std::map<std::string, SceneObject> &virtualScene);
 
     public:
         Model(int id, glm::vec3 position, glm::vec3 scale, glm::vec3 direction, float rotation, const char* name, const char* path, std::map<std::string, SceneObject> &virtualScene);
 
+        // Move o jogador
         void updatePlayer(float delta_t, Camera &camera, const Model& box);
+
+        // Move o bumerange
         bool updateBoomerang(bool &boomerangIsThrown,
                                 bool &primaryAttackStarts,
                                 bool &secondaryAttackStarts,
@@ -45,14 +48,18 @@ class Model {
                                 glm::vec3 &sceneryBboxMax,
                                 glm::mat4 &model);
 
+        // "Raio" da bounding box
         float x_difference;
         float z_difference;
 
-        glm::vec3 bbox_min; // Axis-Aligned Bounding Box do objeto
+        // Axis-Aligned Bounding Box do objeto
+        glm::vec3 bbox_min;
         glm::vec3 bbox_max;
 
+        // Atualiza bounding box
         void updateBbox();
 
+        // Getters para informações de modelo
         glm::vec3 getPosition();
         glm::vec3 getDirection();
         glm::vec3 getScale();
@@ -61,6 +68,7 @@ class Model {
         [[nodiscard]] int getId() const;
         glm::vec3 getOriginalPosition();
 
+        // Setters para atualização de inforamções de modelo
         void setDirection(glm::vec3 direction);
         void setPosition(glm::vec3 position);
         void updateOriginalPosition();

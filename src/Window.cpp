@@ -1,7 +1,3 @@
-//
-// Created by Arthur on 8/12/2023.
-//
-
 /* Headers padrões em C */
 #include <cmath>
 #include <cstdio>
@@ -16,6 +12,7 @@
 #include "SceneObject.h"
 #include "Model.h"
 
+// Definição de constantes para identificação de modelos
 #define SCENERY 0
 #define ROBOT 1
 #define ZOMBIE 2
@@ -103,8 +100,8 @@ void Window::run() {
 
     // Carregamos imagens para serem utilizadas como textura
     this->renderer.LoadTextureImage("../data/textures/floor.jpg");
-    this->renderer.LoadTextureImage("../data/textures/robot/robot_albedo.tga");
-    this->renderer.LoadTextureImage("../data/textures/zombie_diffuse.png");
+    this->renderer.LoadTextureImage("../data/textures/robot.tga");
+    this->renderer.LoadTextureImage("../data/textures/zombie.png");
     this->renderer.LoadTextureImage("../data/textures/wood.jpg");
 
     // Cria modelo do cenário
@@ -155,6 +152,7 @@ void Window::run() {
 
     this->renderer.models.push_back(boomerang);
 
+    // Inicializa o renderizador
     this->renderer.initialize();
 
     // Variável para movimentação baseada em tempo
@@ -176,6 +174,7 @@ void Window::run() {
 // Definição de callback de redimensionamento de tela
 void Window::FramebufferSizeCallback(int width, int height)
 {
+    // Atualiza tamanho da janela
     glViewport(0, 0, width, height);
     this->screenHeight = height;
     this->screenWidth = width;
@@ -187,6 +186,7 @@ void Window::ErrorCallback(int error, const char* description)
     fprintf(stderr, "ERROR: GLFW: %s\n", description);
 }
 
+// Definimos o callback de pressionar teclas
 void Window::KeyCallback(int key, int scancode, int action, int mode) {
 
     // Se o usuário pressionar a tecla ESC, fechamos a janela.
@@ -209,6 +209,7 @@ void Window::KeyCallback(int key, int scancode, int action, int mode) {
         }
     }
 
+    // Caso esteja pausado, para todos os movimentos
     if (this->isPaused_) {
         this->camera.keys.W = false;
         this->camera.keys.A = false;
@@ -255,12 +256,15 @@ void Window::KeyCallback(int key, int scancode, int action, int mode) {
 
 }
 
+// Definimos o callback de pressionar os botões do mouse
 void Window::MouseButtonCallback(int button, int action, int mods) {
 
+    // Caso o jogo esteja pausado
     if (this->isPaused_) {
         return;
     }
 
+    // Caso o usuário pressione os botões do mouse
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
         this->camera.keys.M1 = true;
@@ -279,12 +283,14 @@ void Window::MouseButtonCallback(int button, int action, int mods) {
     }
 }
 
+// Definimos o callback de movimentar o mouse
 void Window::CursorPosCallback(double xpos, double ypos) {
 
     // Deslocamento do cursor do mouse em x e y de coordenadas de tela!
     float dx = xpos - this->lastCursorPosX;
     float dy = ypos - this->lastCursorPosY;
 
+    // Caso esteja pausado, não atualiza a posição do cursor
     if (this->isPaused_) {
         this->lastCursorPosX = xpos;
         this->lastCursorPosY = ypos;
@@ -294,22 +300,23 @@ void Window::CursorPosCallback(double xpos, double ypos) {
     // Atualizamos parâmetros da câmera com os deslocamentos
     if (this->camera.isUseFreeCamera()) {
 
-        // Calcula o ângulo rotação horizontal de acordo com a porcentagem da tela movida (máximo = 2PI)
+        // Em câmera livre, calcula o ângulo rotação horizontal conforme a porcentagem da tela movida
         float angleX = dx/((float) this->screenWidth/2)  * 2 * M_PI;
         float angleY = dy/((float) this->screenHeight/2) * 2 * M_PI;
         this->camera.updateViewVector(angleX, angleY);
         this->camera.updateSphericAngles(angleX);
     }
     else {
+        // Em câmera look-at, atualiza os angulos esféricos para os do cursor
         this->camera.updateSphericAngles(dx, dy);
     }
 
-    // Atualizamos as variáveis globais para armazenar a posição atual do
-    // cursor como sendo a última posição conhecida do cursor.
+    // Atualizamos as variáveis globais para armazenar a posição atual do cursor como sendo a última posição conhecida do cursor.
     this->lastCursorPosX = xpos;
     this->lastCursorPosY = ypos;
 }
 
+// Definimos o callback de scrollar o mouse
 void Window::ScrollCallback(double xoffset, double yoffset) {
     // Atualizamos a distância da câmera para a origem utilizando a
     // movimentação da "rodinha", simulando um ZOOM.

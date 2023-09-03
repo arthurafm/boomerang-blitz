@@ -7,6 +7,7 @@
 #include "glad/glad.h"
 #include "collisions.h"
 
+// Inicializa atributos, computa normais e constrói triângulos
 Model::Model(int id, glm::vec3 position, glm::vec3 scale, glm::vec3 direction, float rotation, const char* name, const char* path, std::map<std::string, SceneObject> &virtualScene) {
     this->objectId = id;
     this->position = position;
@@ -218,6 +219,7 @@ void Model::BuildTrianglesAndAddToVirtualScene(std::map<std::string, SceneObject
     glBindVertexArray(0);
 }
 
+// Getters
 
 glm::vec3 Model::getPosition(){
     return this->position;
@@ -235,53 +237,11 @@ int Model::getId() const{
     return this->objectId;
 }
 
-void Model::updatePlayer(float delta_t, Camera &camera, const Model& box) {
-
-    float speed = 2.0f;
-
-    glm::vec3 newPosition = this->position;
-
-    this->rotation = atan2f(this->direction.z, this->direction.x) - atan2f(camera.getViewVector().z, camera.getViewVector().x);
-
-    glm::vec4 w = -(normalize(camera.getViewVector()));
-    glm::vec4 u = normalize(crossproduct(Camera::upVector, w));
-
-    if (camera.keys.W){
-        newPosition -= glm::vec3(w.x, 0.0f, w.z) * speed * delta_t;
-    }
-    if (camera.keys.S){
-        newPosition += glm::vec3(w.x, 0.0f, w.z) * speed * delta_t;
-    }
-    if (camera.keys.A){
-        newPosition -= glm::vec3(u.x, 0.0f, u.z) * speed * delta_t;
-    }
-    if (camera.keys.D){
-        newPosition += glm::vec3(u.x, 0.0f, u.z) * speed * delta_t;
-    }
-
-    glm::vec3 newBbox_min = glm::vec3(newPosition.x - this->x_difference, newPosition.y, newPosition.z - this->z_difference);
-    glm::vec3 newBbox_max = glm::vec3(newPosition.x + this->x_difference, newPosition.y, newPosition.z + this->z_difference);
-
-    if (!collisions::CubeToBox(newBbox_min, newBbox_max, box.bbox_min, box.bbox_max)) {
-        this->position = newPosition;
-        camera.updateCartesianCoordinates(glm::vec4(newPosition.x, newPosition.y + 0.7f, newPosition.z, 1.0f));
-    }
-
-    if (!camera.isUseFreeCamera()) {
-        glm::vec3 pos = this->position;
-        camera.setLookAt(glm::vec4(pos.x, pos.y + 0.7f, pos.z, 1.0f));
-    }
-
-}
-
 float Model::getRotation() const{
     return this->rotation;
 }
 
-void Model::updateBbox(){
-    this->bbox_max = glm::vec3(this->position.x + this->x_difference, this->position.y, this->position.z + this->z_difference);
-    this->bbox_min = glm::vec3(this->position.x - this->x_difference, this->position.y, this->position.z - this->z_difference);
-}
+// Setters
 
 void Model::setPosition(glm::vec3 position){
     this->position.x = position.x;
@@ -304,6 +264,61 @@ glm::vec3 Model::getDirection(){
     return this->direction;
 }
 
+// Atualiza a bounding box a partir da posição atual e os "raios" salvos
+void Model::updateBbox(){
+    this->bbox_max = glm::vec3(this->position.x + this->x_difference, this->position.y, this->position.z + this->z_difference);
+    this->bbox_min = glm::vec3(this->position.x - this->x_difference, this->position.y, this->position.z - this->z_difference);
+}
+
+// Atualiza a posição do player
+void Model::updatePlayer(float delta_t, Camera &camera, const Model& box) {
+
+    // Velocidade do personagem
+    float speed = 4.0f;
+
+    glm::vec3 newPosition = this->position;
+
+    // Cálculo de rotação a partir da direção original do player
+    this->rotation = atan2f(this->direction.z, this->direction.x) - atan2f(camera.getViewVector().z, camera.getViewVector().x);
+
+    // Cálculo de posição a partir do input do usuário
+
+    glm::vec4 w = -(normalize(camera.getViewVector()));
+    glm::vec4 u = normalize(crossproduct(Camera::upVector, w));
+
+    if (camera.keys.W){
+        newPosition -= glm::vec3(w.x, 0.0f, w.z) * speed * delta_t;
+    }
+    if (camera.keys.S){
+        newPosition += glm::vec3(w.x, 0.0f, w.z) * speed * delta_t;
+    }
+    if (camera.keys.A){
+        newPosition -= glm::vec3(u.x, 0.0f, u.z) * speed * delta_t;
+    }
+    if (camera.keys.D){
+        newPosition += glm::vec3(u.x, 0.0f, u.z) * speed * delta_t;
+    }
+
+    // Atualização da bounding box
+    glm::vec3 newBbox_min = glm::vec3(newPosition.x - this->x_difference, newPosition.y, newPosition.z - this->z_difference);
+    glm::vec3 newBbox_max = glm::vec3(newPosition.x + this->x_difference, newPosition.y, newPosition.z + this->z_difference);
+
+    // Checa colisão com o cenário
+    if (!collisions::CubeToBox(newBbox_min, newBbox_max, box.bbox_min, box.bbox_max)) {
+        // Caso não ocorre, atualiza a posição do personagem
+        this->position = newPosition;
+        camera.updateCartesianCoordinates(glm::vec4(newPosition.x, newPosition.y + 0.7f, newPosition.z, 1.0f));
+    }
+
+    // Caso em câmera look-at, atualiza o ponto de Look-At
+    if (!camera.isUseFreeCamera()) {
+        glm::vec3 pos = this->position;
+        camera.setLookAt(glm::vec4(pos.x, pos.y + 0.7f, pos.z, 1.0f));
+    }
+
+}
+
+// Atualiza a posição do bumerange
 bool Model::updateBoomerang(bool &boomerangIsThrown,
                             bool &primaryAttackStarts,
                             bool &secondaryAttackStarts,
@@ -318,18 +333,25 @@ bool Model::updateBoomerang(bool &boomerangIsThrown,
                             glm::vec3 &sceneryBboxMin,
                             glm::vec3 &sceneryBboxMax,
                             glm::mat4 &model){
+
+    // Velocidade do bumerange
     float boomerangSpeed = 6.0f;
 
+    // Caso o ataque foi inicializado agora
     if (boomerangIsThrown && !primaryAttackStarts && !secondaryAttackStarts) {
+
+        // Atualiza posição, posição original e bounding box a posição do player
         this->setPosition(glm::vec3(robotPosition.x, robotPosition.y, robotPosition.z));
         this->updateOriginalPosition();
-
         this->updateBbox();
 
+        // Calcula a direção de ataque
         glm::vec3 attackDirection = glm::vec3(robotPosition.x, robotPosition.y, robotPosition.z + 1.0f) - robotPosition;
         this->setDirection(normalize(glm::vec3(  attackDirection.x * cos(robotRotation) + attackDirection.z * sin(robotRotation),
                                                   this->getPosition().y,
                                                   -attackDirection.x * sin(robotRotation) + attackDirection.z * cos(robotRotation))));
+
+        // Determina qual ataque foi realizado
         if (M1) {
             primaryAttackStarts = true;
         }
@@ -337,43 +359,70 @@ bool Model::updateBoomerang(bool &boomerangIsThrown,
             secondaryAttackStarts = true;
         }
     }
+    // Caso o primeiro ataque foi realizado
     if (primaryAttackStarts) {
+
+        // Desliga a inicialização do ataque
         boomerangIsThrown = false;
+
+        // Alcance do ataque
         float attackRange = 5.0f;
 
+        // Caso a distãncia entre a posição atual e a posição original seja menor ou igual que o alcance do ataque
         if (glm::distance(glm::vec2(this->getPosition().x, this->getPosition().z), glm::vec2(this->getOriginalPosition().x, this->getOriginalPosition().z)) <= attackRange) {
 
+            // Caso não esteja pausado, atualiza posição e rotação
             if (!isPaused) {
                 this->setPosition(this->getPosition() + this->getDirection() * delta_t * boomerangSpeed);
                 rotationBoomerang += 0.1f;
             }
 
+            // Caso não colida com o cenário
             if (!collisions::CubeToBox(this->bbox_min, this->bbox_max, sceneryBboxMin, sceneryBboxMax)) {
+
+                // A matriz de modelo do bumerange é atualizada
                 model = Matrix_Translate(this->getPosition().x, this->getPosition().y, this->getPosition().z);
                 model *= Matrix_Scale(this->getScale().x, this->getScale().y, this->getScale().z);
                 model *= Matrix_Rotate_X(this->getRotation());
                 model *= Matrix_Rotate_Z(rotationBoomerang);
 
+                // A bounding box é atualizada
                 this->updateBbox();
 
+                // Confirma a renderização do bumerange
                 return true;
             }
         }
+        // Ao final do ataque
         else {
+            // Reseta a rotação do ataque e desliga o booleano de ataque
             rotationBoomerang = 0.0f;
             primaryAttackStarts = false;
+
+            // Não renderiza
             return false;
         }
     }
+    // Caso o segundo ataque foi realizado
     if (secondaryAttackStarts) {
+
+        // Desliga a inicialização do ataque
         boomerangIsThrown = false;
+
+        // Alcance do ataque
         float attackRange = 7.5f;
+
+        // Caso a distãncia entre a posição atual e a posição original seja menor ou igual que o alcance do ataque
         if (glm::distance(glm::vec2(this->getPosition().x, this->getPosition().z), glm::vec2(this->getOriginalPosition().x, this->getOriginalPosition().z)) <= attackRange) {
 
+            // Caso não esteja pausado, calcula curva de bézier de grau 2 e atualiza posição e rotação
             if (!isPaused) {
+
+                // Cálculo da posição do ponto intermediário
                 float distanceToIntermediate = attackRange * 0.7f;
                 float angleToIntermediate = M_PI_2;
 
+                // Cálculo de Curva de Bézier
                 glm::vec3 p2;
                 p2.x = this->getOriginalPosition().x + distanceToIntermediate * (cos(angleToIntermediate) * this->getDirection().x - sin(angleToIntermediate) * this->getDirection().z);
                 p2.y = this->getPosition().y;
@@ -385,27 +434,36 @@ bool Model::updateBoomerang(bool &boomerangIsThrown,
                 glm::vec3 c23 = p2 + t * (p3 - p2);
                 glm::vec3 c = c12 + t * (c23 - c12);
 
+                // Atualiza valores de posição e rotação
                 this->setPosition(c);
-
                 rotationBoomerang += 0.1f;
                 t += 0.5f * delta_t * boomerangSpeed;
             }
 
+            // Caso não colida com o cenário
             if (!collisions::CubeToBox(this->bbox_min, this->bbox_max, sceneryBboxMin, sceneryBboxMax)) {
+
+                // A matriz de modelo do bumerange é atualizada
                 model = Matrix_Translate(this->getPosition().x, this->getPosition().y, this->getPosition().z);
                 model *= Matrix_Scale(this->getScale().x, this->getScale().y, this->getScale().z);
                 model *= Matrix_Rotate_X(this->getRotation());
                 model *= Matrix_Rotate_Z(rotationBoomerang);
 
+                // A bounding box é atualizada
                 this->updateBbox();
 
+                // Confirma a renderização do bumerange
                 return true;
             }
         }
+        // Ao final do ataque
         else {
+            // Reseta a rotação do ataque e desliga o booleano de ataque
             rotationBoomerang = 0.0f;
             t = 0.0f;
             secondaryAttackStarts = false;
+
+            // Não renderiza
             return false;
         }
     }

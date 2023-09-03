@@ -1,9 +1,6 @@
-//
-// Created by Arthur on 8/12/2023.
-//
-
 #include "SceneObject.h"
 
+// Inicialização do objeto da cena
 SceneObject::SceneObject(std::string name, size_t first_index, size_t num_indices, GLenum rendering_mode, GLuint vertex_array_object_id, glm::vec3 bbox_min, glm::vec3 bbox_max) {
     this->name = name;
     this->first_index = first_index;

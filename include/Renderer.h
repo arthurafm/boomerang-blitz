@@ -1,7 +1,3 @@
-//
-// Created by Arthur on 8/12/2023.
-//
-
 #ifndef FCG_TRAB_FINAL_RENDERER_H
 #define FCG_TRAB_FINAL_RENDERER_H
 
@@ -18,6 +14,7 @@
 #include <map>
 #include <stb_image.h>
 
+// Estrutura para dados de inimigo individuais
 struct enemyData {
     glm::vec3 position;
     glm::vec3 direction;
@@ -60,8 +57,11 @@ class Renderer{
 
     public:
         Renderer();
+
+        // Inicializa o renderizador
         void initialize();
 
+        // Vetor de modelos a serem renderizados
         std::vector<Model> models;
 
         std::map<std::string, SceneObject> virtualScene;
@@ -69,10 +69,8 @@ class Renderer{
         void LoadShadersFromFiles(); // Carrega os shaders de vértice e fragmento, criando um programa de GPU
         void LoadTextureImage(const char* filename); // Função que carrega imagens de textura
 
+        // Renderização geral de modelos
         bool render(GLFWwindow* window, bool isPaused, Camera &camera, const float &aspectRatio, float &initialTime, float &spawnTime);
-
-
-
 };
 
 

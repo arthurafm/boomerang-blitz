@@ -1,7 +1,3 @@
-//
-// Created by Arthur on 8/12/2023.
-//
-
 #ifndef FCG_TRAB_FINAL_WINDOW_H
 #define FCG_TRAB_FINAL_WINDOW_H
 
@@ -25,6 +21,7 @@ class Window {
         double lastCursorPosX;
         double lastCursorPosY;
 
+        // Variável relacionada a pausa
         bool isPaused_;
 
         /* Funções callback para comunicação com o sistema operacional e interação com o usuário */
@@ -37,6 +34,8 @@ class Window {
 
     public:
         Window();
+
+        // Função de execução
         void run();
 };
 

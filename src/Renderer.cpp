@@ -1,16 +1,11 @@
-//
-// Created by Arthur on 8/12/2023.
-//
-
 #include "Renderer.h"
 #include "collisions.h"
 
+// Definição de constantes para identificação de modelos
 #define SCENERY 0
 #define ROBOT 1
 #define ZOMBIE 2
 #define BOOMERANG 3
-
-
 
 // Construtor do renderizador
 Renderer::Renderer() {
@@ -18,6 +13,7 @@ Renderer::Renderer() {
     this->numLoadedTextures = 0;
 }
 
+// Inicializa o renderizador
 void Renderer::initialize() {
     // Habilitamos o Z-buffer.
     glEnable(GL_DEPTH_TEST);
@@ -275,6 +271,7 @@ void Renderer::DrawVirtualObject(const char* object_name)
     glBindVertexArray(0);
 }
 
+// Variáveis de controle de jogo
 bool boomerangIsThrown, secondaryAttackStarts, primaryAttackStarts = false;
 float rotationBoomerang = 0.0f;
 float t = 0.0f;
@@ -283,12 +280,15 @@ std::vector<enemyData> enemies;
 int enemiesKilled = 0;
 int enemiesSpawned = 0;
 
+// Atualiza o estado de jogo
 void updateGameStatus (int &phase, int &enemiesKilled, int &enemiesSpawned) {
+    // Caso atinja 16 inimigos mortos na fase 1, passa para a fase 2
     if (phase == 0 && enemiesKilled == 16) {
         phase++;
         enemiesKilled = 0;
         enemiesSpawned = 0;
     }
+    // Caso atinja 32 inimigos mortos na fase 2, passa para a fase 3
     if (phase == 1 && enemiesKilled == 32) {
         phase++;
         enemiesKilled = 0;
@@ -296,36 +296,45 @@ void updateGameStatus (int &phase, int &enemiesKilled, int &enemiesSpawned) {
     }
 }
 
-void generateZombies (float &currentTime, float &spawnTime, float &x_difference, float &z_difference, bool &isPaused, float xDifference, float zDdifference) {
+// Gera inimigos a partir do estado de jogo
+void generateZombies (float &currentTime, float &spawnTime, float &x_difference, float &z_difference, bool &isPaused) {
+
     float spawn_delta_t = currentTime - spawnTime;
-    float spawningTime = 5.0f - (float) phase;
+    float spawningTime = 5.0f - (float) phase; // Fase 1: 5s, Fase 2: 4s, Fase 3: 3s
+
+    // Caso tenha passado do tempo de spawn e não esteja pausado
     if (spawn_delta_t >= spawningTime && !isPaused){
-        if ((phase == 0 && enemiesSpawned < 16)
-            || (phase == 1 && enemiesSpawned < 32)
-            || (phase == 2)) {
+        if ((phase == 0 && enemiesSpawned < 16)     // Fase 1 dura 16 inimigos
+            || (phase == 1 && enemiesSpawned < 32)  // Fase 2 dura 32 inimigos
+            || (phase == 2)) {                      // Fase 3 dura até a morte do jogador
             for (int i = 0; i < 4; i++) {
                 enemyData newEnemy;
-                newEnemy.speed = 1.0f + (float) phase;
-                newEnemy.direction = normalize(glm::vec3(0.0f, 0.0f, 8.5f));
+                newEnemy.speed = 1.0f + (float) phase; // Fase 1: 1.0f, Fase 2: 2.0f, Fase 3: 3.0f
+                newEnemy.direction = glm::vec3(0.0f, 0.0f, 1.0f);
+
+                // Os zumbis são plotados nos quatro pontos cardeais simultaneamente.
                 if( i == 0) {
                     newEnemy.position = glm::vec3(0.0f, 0.0f, -6.8f);
                     newEnemy.bbox_max = glm::vec3(newEnemy.position.x + x_difference, newEnemy.position.y,
                                                   newEnemy.position.z + z_difference);
                     newEnemy.bbox_min = glm::vec3(newEnemy.position.x - x_difference, newEnemy.position.y,
                                                   newEnemy.position.z - z_difference);
-                } else if (i == 1) {
+                }
+                else if (i == 1) {
                     newEnemy.position = glm::vec3(0.0f, 0.0f, 6.8f);
                     newEnemy.bbox_max = glm::vec3(newEnemy.position.x + x_difference, newEnemy.position.y,
                                                   newEnemy.position.z + z_difference);
                     newEnemy.bbox_min = glm::vec3(newEnemy.position.x - x_difference, newEnemy.position.y,
                                                   newEnemy.position.z - z_difference);
-                } else if (i == 2) {
+                }
+                else if (i == 2) {
                     newEnemy.position = glm::vec3(-6.8f, 0.0f, 0.0f);
                     newEnemy.bbox_max = glm::vec3(newEnemy.position.x + x_difference, newEnemy.position.y,
                                                   newEnemy.position.z + z_difference);
                     newEnemy.bbox_min = glm::vec3(newEnemy.position.x - x_difference, newEnemy.position.y,
                                                   newEnemy.position.z - z_difference);
-                } else {
+                }
+                else {
                     newEnemy.position = glm::vec3(6.8f, 0.0f, 0.0f);
                     newEnemy.bbox_max = glm::vec3(newEnemy.position.x + x_difference, newEnemy.position.y,
                                                   newEnemy.position.z + z_difference);
@@ -339,11 +348,13 @@ void generateZombies (float &currentTime, float &spawnTime, float &x_difference,
 
         spawnTime = currentTime;
     }
+    // Caso esteja pausado, o tempo de spawn não é atualizado
     if (isPaused) {
         spawnTime += spawn_delta_t;
     }
 }
 
+// Renderiza a cena
 bool Renderer::render(GLFWwindow* window, bool isPaused, Camera &camera, const float &aspectRatio, float &initialTime, float &spawnTime) {
     // Define a cor de "fundo" do framebuffer como branco.
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -365,18 +376,27 @@ bool Renderer::render(GLFWwindow* window, bool isPaused, Camera &camera, const f
     float delta_t = currentTime - initialTime;
     initialTime = currentTime;
 
+    // Atualiza o estado de jogo
     updateGameStatus (phase, enemiesKilled, enemiesSpawned);
 
-    generateZombies (currentTime, spawnTime, this->models[ZOMBIE].x_difference, this->models[ZOMBIE].z_difference, isPaused, this->models[ZOMBIE].x_difference, this->models[ZOMBIE].z_difference);
+    // Cria os inimigos a partir do estado de jogo
+    generateZombies (currentTime,
+                     spawnTime,
+                     this->models[ZOMBIE].x_difference,
+                     this->models[ZOMBIE].z_difference,
+                     isPaused);
 
+    // Atualiza a câmera
     camera.updateCamera(delta_t);
 
+    // Checa se foi realizado um ataque
     if (camera.keys.M1 || camera.keys.M2) {
         boomerangIsThrown = true;
     }
 
     glm::mat4 model = Matrix_Identity();
 
+    // Renderiza todos os modelos
     for (Model &object : this->models) {
 
         // Se é o bumerange
@@ -384,6 +404,8 @@ bool Renderer::render(GLFWwindow* window, bool isPaused, Camera &camera, const f
             glm::vec3 robotPosition = glm::vec3(this->models[ROBOT].getPosition().x,
                                                 this->models[ROBOT].getPosition().y,
                                                 this->models[ROBOT].getPosition().z);
+
+            // Atualiza posição do bumerange caso esteja em condição de ataque
             if (object.updateBoomerang(boomerangIsThrown,
                                        primaryAttackStarts,
                                        secondaryAttackStarts,
@@ -403,15 +425,19 @@ bool Renderer::render(GLFWwindow* window, bool isPaused, Camera &camera, const f
                 this->DrawVirtualObject(object.getName().c_str());
             }
         }
+        // Se é o zumbi
         else if (object.getId() == ZOMBIE) {
 
             float x_difference = this->models[ZOMBIE].x_difference;
             float z_difference = this->models[ZOMBIE].z_difference;
 
             for (int i = 0; i < enemies.size(); i++) {
+
+                // Caso o robô seja atingido pelo zumbi, retorna falso
                 if (collisions::CylinderToCylinder(enemies[i].bbox_min, enemies[i].bbox_max, this->models[ROBOT].bbox_min, this->models[ROBOT].bbox_max)) {
                     return false;
                 }
+                // Caso o bumerange atinja o zumbi, ele morre
                 if (collisions::CubeToCylinder(enemies[i].bbox_min, enemies[i].bbox_max, this->models[BOOMERANG].bbox_min, this->models[BOOMERANG].bbox_max)
                     && (primaryAttackStarts || secondaryAttackStarts)) {
                     enemies.erase(enemies.begin() + i);
@@ -421,18 +447,19 @@ bool Renderer::render(GLFWwindow* window, bool isPaused, Camera &camera, const f
 
                 glm::vec3 playerDirection = normalize(this->models[ROBOT].getPosition() - enemies[i].position);
 
+                // Caso esteja pausado, os zumbis não se movem
                 if (!isPaused) {
                     enemies[i].position = enemies[i].position + playerDirection * delta_t * enemies[i].speed;
                 }
 
-                model = Matrix_Translate(enemies[i].position.x, enemies[i].position.y, enemies[i].position.z);
-                model *= Matrix_Scale(object.getScale().x, object.getScale().y, object.getScale().z);
-
+                // Atualiza a bounding box do zumbi
                 enemies[i].bbox_max = glm::vec3(enemies[i].position.x + x_difference, enemies[i].position.y, enemies[i].position.z + z_difference);
                 enemies[i].bbox_min = glm::vec3(enemies[i].position.x - x_difference, enemies[i].position.y, enemies[i].position.z - z_difference);
-
                 enemies[i].rotation = atan2f(enemies[i].direction.z, enemies[i].direction.x) - atan2f(playerDirection.z, playerDirection.x);
 
+                // Atualiza a matrix de modelo
+                model = Matrix_Translate(enemies[i].position.x, enemies[i].position.y, enemies[i].position.z);
+                model *= Matrix_Scale(object.getScale().x, object.getScale().y, object.getScale().z);
                 model *= Matrix_Rotate_Y(enemies[i].rotation);
 
                 glUniformMatrix4fv(this->model_uniform, 1, GL_FALSE, glm::value_ptr(model));
@@ -447,17 +474,14 @@ bool Renderer::render(GLFWwindow* window, bool isPaused, Camera &camera, const f
                 object.updatePlayer(delta_t, camera, this->models[SCENERY]);
             }
 
+            // Atualiza a matrix de modelo
             model = Matrix_Translate(object.getPosition().x, object.getPosition().y, object.getPosition().z);
             model *= Matrix_Scale(object.getScale().x, object.getScale().y, object.getScale().z);
-
-            object.updateBbox();
-
             model *= Matrix_Rotate_Y(object.getRotation());
 
-            // Se é o robô
-            if (object.getId() == ROBOT) {
-                object.updatePlayer(delta_t, camera, this->models[SCENERY]);
-            }
+            // Atualiza a bounding box
+            object.updateBbox();
+
             glUniformMatrix4fv(this->model_uniform, 1, GL_FALSE, glm::value_ptr(model));
             glUniform1i(this->object_id_uniform, object.getId());
             this->DrawVirtualObject(object.getName().c_str());

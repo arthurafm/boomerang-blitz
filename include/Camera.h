@@ -1,15 +1,12 @@
-//
-// Created by Arthur on 8/12/2023.
-//
-
 #ifndef FCG_TRAB_FINAL_CAMERA_H
 #define FCG_TRAB_FINAL_CAMERA_H
 
 #include "matrices.h"
 #define FOV M_PI / 3.0f // 60º
 
+// Estrutura de teclas pressionadas
 struct Keys {
-    bool W, A, S, D, M1, M2, M3;
+    bool W, A, S, D, M1, M2;
 
     Keys(){
         this->W = false;
@@ -18,10 +15,10 @@ struct Keys {
         this->D = false;
         this->M1 = false;
         this->M2 = false;
-        this->M3 = false;
     }
 };
 
+// Estrutura para coordenadas esféricas
 struct SphericPosition {
     float phi, theta, distance;
 
@@ -52,7 +49,6 @@ class Camera {
         /* Variáveis vetoriais */
         glm::vec4 viewVector;
         void updateViewVector();
-
         glm::vec4 lookAt;
 
     public:
@@ -60,31 +56,30 @@ class Camera {
         glm::vec4 getLookAt(); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
         void setLookAt(glm::vec4 vec);
         glm::vec4 getViewVector();  // Vetor "view", sentido para onde a câmera está virada
-        glm::mat4 getView();
-        glm::mat4 getPerspective(float aspectRatio) const;
+        glm::mat4 getView(); // Matriz "view"
+        [[nodiscard]] glm::mat4 getPerspective(float aspectRatio) const; // Matriz "perspective"
 
         /* Características vetoriais */
         static glm::vec4 upVector;
 
+        // Atualização da câmera
         void updateCamera(float delta_t);
-
         void updateViewVector(float angleX, float angleY);
 
+        // Atualização das coordenadas esféricas
         void updateSphericAngles(float dx, float dy);
         void updateSphericAngles(float angle);
-
         void updateSphericDistance(float distance);
 
+        // Atualização das coordendas cartesianas
         void updateCartesianCoordinates(glm::vec4 coords);
 
+        // Controle de tipo de câmera
         [[nodiscard]] bool isUseFreeCamera() const;
         void revertFreeCamera();
 
-
-
         /* Variáveis de controle de pressionar teclas e botões do mouse */
         Keys keys;
-
     };
 
 #endif //FCG_TRAB_FINAL_CAMERA_H
