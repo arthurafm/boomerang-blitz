@@ -75,6 +75,8 @@ class Camera {
 
         void updateSphericDistance(float distance);
 
+        void updateCartesianCoordinates(glm::vec4 coords);
+
         [[nodiscard]] bool isUseFreeCamera() const;
         void revertFreeCamera();
 

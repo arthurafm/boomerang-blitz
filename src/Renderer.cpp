@@ -10,8 +10,6 @@
 #define ZOMBIE 2
 #define BOOMERANG 3
 
-
-
 // Construtor do renderizador
 Renderer::Renderer() {
     this->gpuProgramID = 0;
@@ -275,6 +273,7 @@ void Renderer::DrawVirtualObject(const char* object_name)
     glBindVertexArray(0);
 }
 
+// Variáveis globais de controle de estado de jogo
 bool boomerangIsThrown, secondaryAttackStarts, primaryAttackStarts = false;
 float rotationBoomerang = 0.0f;
 float t = 0.0f;
@@ -283,6 +282,7 @@ std::vector<enemyData> enemies;
 int enemiesKilled = 0;
 int enemiesSpawned = 0;
 
+// Função de renderização
 bool Renderer::render(GLFWwindow* window, bool isPaused, Camera &camera, const float &aspectRatio, float &initialTime, float &spawnTime) {
     // Define a cor de "fundo" do framebuffer como branco.
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);

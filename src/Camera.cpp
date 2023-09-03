@@ -101,6 +101,10 @@ void Camera::updateSphericDistance(float distance) {
     }
 }
 
+void Camera::updateCartesianCoordinates(glm::vec4 coords){
+    this->cartesianPosition = coords;
+}
+
 glm::mat4 Camera::getView() {
     if (this->useFreeCamera) {
         return Matrix_Camera_View(this->cartesianPosition, this->viewVector, Camera::upVector);

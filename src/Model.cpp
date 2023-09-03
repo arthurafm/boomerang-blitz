@@ -264,6 +264,7 @@ void Model::updatePlayer(float delta_t, Camera &camera, const Model& box) {
 
     if (!collisions::CubeToBox(newBbox_min, newBbox_max, box.bbox_min, box.bbox_max)) {
         this->position = newPosition;
+        camera.updateCartesianCoordinates(glm::vec4(newPosition.x, newPosition.y + 0.7f, newPosition.z, 1.0f));
     }
 
     if (!camera.isUseFreeCamera()) {
